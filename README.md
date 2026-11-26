@@ -14,7 +14,7 @@ Nu ai nevoie de cont și nu plătești nimic. După prima deschidere, aplicația
 - **Calendarul vânătorii:** toate perioadele de vânătoare pe o linie a timpului, pe grupe de specii.
 - **Trucuri:** capcanele care nu sunt niciodată corecte și regulile care rezolvă zeci de întrebări deodată, verificate pe toate grilele.
 - **Cele mai grele întrebări**, adunate într-o fișă separată.
-- **Poze alb-negru**, ca la examen.
+- **Poze alb-negru** (Buton comutare).
 - **Simulare de examen:** 30 de întrebări, 60 de minute, cu rezultat ADMIS sau RESPINS (pragul e 20 din 30).
 - **Teste rapide**, cu răspunsul afișat pe loc. Întrebările nu se repetă până nu le vezi pe toate.
 - **Repetă greșelile** și **istoricul testelor**, cu revizuirea fiecărui test.
