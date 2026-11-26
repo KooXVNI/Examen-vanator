@@ -176,6 +176,29 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
 .badge.ok{background:var(--okbg);color:var(--ok)}.badge.bad{background:var(--badbg);color:var(--bad)}
 .hist{color:var(--muted);font-size:.95rem;margin:8px 0 0}
 .hist b{color:var(--ink)}
+.hero-link{background:none;border:0;color:var(--pine-ink);text-decoration:underline;cursor:pointer;font:inherit;padding:0 2px}
+.datebox{margin-top:14px;background:rgba(255,255,255,.08);border-radius:12px;padding:12px}
+.datebox label{display:block;font-weight:700;margin-bottom:8px;color:var(--pine-ink)}
+.daterow{display:flex;gap:8px}
+.daterow input{flex:1;min-width:0;font:inherit;font-size:16px;padding:10px 12px;border-radius:10px;border:0;background:#fff;color:#1C2A22}
+.daterow .btn{width:auto;flex:none;padding:10px 16px}
+.today{background:var(--surface);border:1.5px solid var(--line);border-left:5px solid var(--blaze);border-radius:12px;padding:14px 16px;margin:12px 0 4px}
+.today b.h{display:block;font-family:var(--serif);font-size:1.08rem;margin-bottom:6px}
+.today ul{margin:0;padding-left:20px}.today li{margin:3px 0}
+.steps{list-style:none;margin:10px 0 0;padding:0;counter-reset:s}
+.steps li{display:grid;grid-template-columns:34px 1fr;gap:4px 10px;padding:12px 0;border-top:1px solid var(--line);counter-increment:s}
+.steps li::before{content:counter(s);grid-row:1/4;width:30px;height:30px;border-radius:50%;background:var(--track);color:var(--ink);display:grid;place-items:center;font-weight:700;font-family:var(--serif)}
+.steps li.done::before{content:"✓";background:var(--ok);color:#fff}
+.steps .t{font-weight:700}
+.steps .d{color:var(--muted);font-size:.93rem;line-height:1.4}
+.steps .row{display:flex;align-items:center;gap:10px}
+.steps .row .bar{flex:1;margin:0}
+.steps .row small{color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.steps .t,.steps .d,.steps .row,.steps button.go{grid-column:2}
+.steps button.go{white-space:nowrap;justify-self:start;background:none;border:1.5px solid var(--line);border-radius:9px;padding:6px 12px;font-weight:600;cursor:pointer;color:var(--ink);margin-top:4px}
+.tricks h2{margin-top:22px}
+.tricks ul{padding-left:20px;margin:6px 0}.tricks li{margin:5px 0;line-height:1.45}
+.card.wide{grid-column:1/-1}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -186,6 +209,10 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
     <div class="wrap">
       <h1>Examen de vânător</h1>
       <p id="when"></p>
+      <div class="datebox hidden" id="dateBox">
+        <label for="examDate">Când ai examenul?</label>
+        <div class="daterow"><input type="date" id="examDate"><button class="btn btn-primary" id="saveDate">Salvează</button></div>
+      </div>
       <div class="vest">
         <div class="vest-bar"><div class="vest-fill" id="totalFill"></div></div>
         <div class="vest-label"><span>Știi <b id="known">0</b> din <span id="total">0</span> de întrebări</span><span id="pct">0%</span></div>
@@ -193,10 +220,14 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
     </div>
   </section>
   <div class="wrap">
+    <h2>Planul tău</h2>
+    <div class="today" id="today"></div>
+    <ol class="steps" id="steps"></ol>
     <h2>Învață rapid</h2>
     <div class="cards">
       <button class="card" id="goSheets"><i></i><b>Fișe</b><span>Pe specii și pe capitole, cu răspunsul direct. Le poți și asculta.</span></button>
       <button class="card" id="goTables"><i></i><b>Tabele</b><span>Perioade de vânătoare, împerechere, gestație, coarne.</span></button>
+      <button class="card wide" id="goTricks"><i></i><b>Trucuri</b><span>Capcanele care nu sunt niciodată corecte și regulile care rezolvă zeci de întrebări deodată.</span></button>
     </div>
     <label class="switch"><span>Poze alb-negru, ca la examen<small>Așa exersezi recunoașterea fără culori.</small></span><input type="checkbox" id="bwSwitch"></label>
     <button class="btn btn-secondary" id="listenAll" style="margin-top:10px">Ascultă toată materia</button>
@@ -253,6 +284,62 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
   </div>
 </main>
 
+<main id="tricks" class="hidden">
+  <div class="qbar"><div class="qbar-in"><button class="back" id="tricksBack">‹ Acasă</button><span class="qmeta">verificate pe toate grilele</span></div></div>
+  <div class="wrap tricks">
+    <h1 class="sheet-title">Trucuri</h1>
+    <p class="hint">Examenul se dă din exact aceste grile, deci tiparele de mai jos funcționează și la examen. Procentele sunt calculate pe toate întrebările.</p>
+    <h2>1. Capcane: taie-le din start</h2>
+    <ul>
+      <li>„<b>exclusiv</b>”: corect doar de 5 ori din 67</li>
+      <li>„<b>da, fără restricții</b>”: niciodată corect</li>
+      <li>„<b>exclusiv animală</b>” la hrană, „<b>auroral</b>” singur la activitate, „<b>blană</b>” singur la trofeu: niciodată corecte</li>
+      <li>„<b>numai</b>” sau „<b>doar</b>”: corecte doar în 19% din cazuri; „<b>niciodată</b>”, „<b>oricând</b>”, „<b>toate</b>”: doar în 25%</li>
+      <li>Autorizația pentru căprior, capră neagră și muflon e <b>individuală</b>, niciodată colectivă</li>
+    </ul>
+    <h2>2. Perioade de vânătoare</h2>
+    <ul>
+      <li><b>Mereu greșite:</b> „1 sept – 15 martie” și „15 mai – 15 oct”. La păsări, tot greșite sunt și perioadele care încep pe 1 sau 20 august sau se termină în noiembrie (singura excepție: cocoșul de munte, 30 noiembrie).</li>
+      <li><b>„1 sept – 15 feb”</b> e doar pentru femelele de cervide și rața mare. <b>„1 nov – 31 ian”</b> e doar pentru iepuri.</li>
+      <li><b>Rațele:</b> „15 la 15”, adică 15 august – 15 februarie. <b>Restul păsărilor:</b> 1 septembrie – 28 februarie.</li>
+      <li><b>Trofeul începe odată cu împerecherea:</b> cerbul 10 sept – 15 nov, lopătarul 10 oct – 1 dec, capra neagră 15 oct – 15 dec, căpriorul vara, 1 mai – 15 oct.</li>
+      <li><b>Răpitoarele cu blană și ciorile</b> merg până la 31 martie. <b>Migratoarele</b> se opresc când pleacă: turturica pe 30 sept, prepelița și ciocârlia pe 31 oct.</li>
+      <li><b>Gaița e capcană:</b> e pasăre obișnuită, 1 sept – 28 feb.</li>
+    </ul>
+    <h2>3. Reguli pe teme</h2>
+    <ul>
+      <li><b>Activitate:</b> păsările, capra neagră și muflonul sunt diurne; cerbul și căpriorul sunt crepusculare și aurorale; mistrețul, ursul și iepurele sunt nocturne; toate răpitoarele sunt crepusculare și nocturne.</li>
+      <li><b>Simțuri:</b> păsările au văzul și auzul, mamiferele mirosul și auzul; muflonul și râsul au toate trei. Simțul cel mai slab e mereu văzul.</li>
+      <li><b>Trofeu:</b> cervidele, capra neagră și muflonul au coarne cu craniu; lupul, râsul, pisica, șacalul și ursul au blană și craniu; vulpea și viezurele doar craniul; mistrețul colții.</li>
+      <li><b>Hrană:</b> „animală și vegetală” e corect de 14 ori din 25.</li>
+      <li><b>Dimorfism, după variantele date:</b> „pronunțat / slab / inexistent” → pronunțat; „puternic / slab / inexistent” → puternic; dacă apar și „puternic”, și „pronunțat” → slab; dacă apare „mediu” → inexistent. Excepții: capra neagră și potârnichea sunt slab pronunțat.</li>
+      <li><b>Suprafața minimă de fond pe vânător:</b> câmpie 150, deal 200, munte 250 ha.</li>
+      <li><b>Ramurile trofeului de cerb</b>, de jos în sus: ochiului, de gheață, mijlocie, lupului.</li>
+    </ul>
+    <h2>4. Numere</h2>
+    <ul><li>Dacă toate variantele sunt numere, alege <b>valoarea din mijloc</b> (după valoare, nu după poziție): e corectă în 53% din cazuri. Cea mai mică e corectă doar în 19%.</li></ul>
+    <h2>5. Poze</h2>
+    <ul>
+      <li>Pozele se repetă în grupuri de câte trei, dar ordinea A, B, C se schimbă. Învață un semn pentru fiecare poză, nu litera.</li>
+      <li>Rața mare: guler alb. Lingurarul: cioc ca o lingură. Rața moțată: moț. Gârlița: frunte albă. Corbul: cel mai mare, cioc masiv. Stăncuța: ochi alb. Porumbelul gulerat: pată albă pe gât. Guguștiucul: semilună neagră pe ceafă. Cocoșul de munte: coadă în evantai. Cocoșul de mesteacăn: coadă în formă de liră.</li>
+    </ul>
+    <h2>6. Când nu știi deloc</h2>
+    <ul>
+      <li>Taie capcanele de la punctul 1.</li>
+      <li>Dacă variantele sunt numere, alege mijlocul.</li>
+      <li>Altfel, alege <b>varianta cea mai lungă</b>, dar nu pe cea care le adună pe celelalte (aceea e corectă doar în 22% din cazuri).</li>
+      <li>Așa nimerești 45% din întrebări, față de 33% la ghicit pur.</li>
+    </ul>
+    <h2>7. La examen</h2>
+    <ul>
+      <li>Ai 60 de minute pentru 30 de întrebări, deci 2 minute pe întrebare.</li>
+      <li>Răspunde întâi la ce știi sau recunoști, apoi taie capcanele, iar la final ghicește după punctul 6.</li>
+      <li>Ai nevoie de cel puțin 20 de răspunsuri corecte din 30.</li>
+    </ul>
+    <div class="spacer"></div>
+  </div>
+</main>
+
 <main id="sheets" class="hidden">
   <div class="qbar"><div class="qbar-in"><button class="back" id="sheetsBack">‹ Acasă</button><span class="qmeta" id="sheetsMeta"></span></div></div>
   <div class="wrap">
@@ -299,7 +386,7 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
   var D=JSON.parse(document.getElementById('data').textContent);
   var Q=D.q, M=D.m;
   Q.forEach(function(q,i){q.id=i;q.o=q.o.map(function(s){return s.replace(/[;.,]\s*$/,'')});});
-  var EXAM=new Date(2026,10,29);
+  var LUNI=['ianuarie','februarie','martie','aprilie','mai','iunie','iulie','august','septembrie','octombrie','noiembrie','decembrie'];
   var KEY='vanator-progres-v1';
   var st={};
   try{st=JSON.parse(localStorage.getItem(KEY)||'{}')||{}}catch(e){st={}}
@@ -314,10 +401,7 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
   function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
 
   function renderHome(){
-    var today=new Date();today.setHours(0,0,0,0);
-    var d=Math.round((EXAM-today)/864e5);
-    var zile=d+(d%100>=20||d%100===0?' de zile':' zile');
-    $('when').innerHTML=d>1?'Mai sunt <span class="days">'+zile+'</span> până la examen, pe 29 noiembrie.':d===1?'Examenul e <span class="days">mâine</span>, pe 29 noiembrie.':d===0?'Examenul e <span class="days">azi</span>. Succes!':'Examenul a fost pe 29 noiembrie.';
+    renderWhen();renderPlan();
     var k=Q.filter(known).length;
     $('known').textContent=k;$('total').textContent=Q.length;
     var p=Math.round(k*100/Q.length);$('pct').textContent=p+'%';
@@ -357,7 +441,7 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
   }
 
   var S=null;
-  function show(id){['home','quiz','result','sheets','sheet'].forEach(function(x){$(x).classList.toggle('hidden',x!==id)});window.scrollTo(0,0)}
+  function show(id){['home','quiz','result','sheets','sheet','tricks'].forEach(function(x){$(x).classList.toggle('hidden',x!==id)});window.scrollTo(0,0)}
   var EX=null;
   function start(list,label,learn,from,exam){stopAudio();if(exam){stopTimer();EX=null}S={exam:!!exam,ans:exam?list.map(function(){return null}):null,list:list,i:0,label:label,score:0,missed:[],learn:!!learn,from:from||null};$('quit').textContent=from?'‹ Fișa':'‹ Acasă';$('home2').textContent=from?'Înapoi la fișă':'Înapoi acasă';$('quit').textContent=exam?'‹ Meniu':$('quit').textContent;show('quiz');if(exam){EX=S;S.prevT={};list.forEach(function(q){S.prevT[q.id]=st._t?st._t[q.id]:undefined});startTimer();persistEx()}renderQ()}
   function seenT(q){return (st._t&&st._t[q.id])||(st[q.id]?1:0)}
@@ -584,6 +668,69 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
   $('bwSwitch').onchange=function(){setBw(this.checked)};
   $('imgToggle').onclick=function(){setBw(!bw)};
   applyBw();
+
+  function examDay(){if(!st._date)return null;var p=st._date.split('-');return new Date(+p[0],+p[1]-1,+p[2])}
+  function daysLeft(){var e=examDay();if(!e)return null;var t=new Date();t.setHours(0,0,0,0);return Math.round((e-t)/864e5)}
+  function zile(n){return n===1?'o zi':n+(n%100>=20||n%100===0?' de zile':' zile')}
+  function dateTxt(){var e=examDay();return e.getDate()+' '+LUNI[e.getMonth()]}
+  function renderWhen(){
+    var w=$('when'),box=$('dateBox'),d=daysLeft();
+    if(d===null){w.textContent='Spune-mi când ai examenul și îți fac planul pe zile.';box.classList.remove('hidden');return}
+    box.classList.add('hidden');
+    var t=d>1?'Mai sunt <span class="days">'+zile(d)+'</span> până la examen, pe '+dateTxt()+'.':d===1?'Examenul e <span class="days">mâine</span>, pe '+dateTxt()+'.':d===0?'Examenul e <span class="days">azi</span>. Succes!':'Examenul a fost pe '+dateTxt()+'.';
+    w.innerHTML=t+' <button class="hero-link" id="changeDate">Schimbă data</button>';
+    $('changeDate').onclick=function(){$('examDate').value=st._date||'';box.classList.remove('hidden');$('examDate').focus()};
+  }
+  $('saveDate').onclick=function(){var v=$('examDate').value;if(!/^\d{4}-\d{2}-\d{2}$/.test(v)){$('examDate').focus();return}st._date=v;save();renderHome()};
+  function gIdx(pref){for(var i=0;i<G.length;i++)if(G[i].t.indexOf(pref)===0)return i;return -1}
+  function renderPlan(){
+    var d=daysLeft();
+    var nonP=0,doneP=0;G.forEach(function(g,i){if(g.k==='Prioritate')return;nonP++;if(st._s['g'+i])doneP++});
+    T.forEach(function(t,i){nonP++;if(st._s['t'+i])doneP++});
+    var listenFrac=Math.min(1,(st._p||0)/Q.length);
+    var fisePct=Math.max(doneP/nonP,listenFrac),fiseLeft=Math.round(nonP*(1-fisePct));
+    var hi=gIdx('Cele '),ii=gIdx('Recunoaștere din poze');
+    var hard=hi>=0?G[hi].ids:[],imgs=ii>=0?G[ii].ids:[];
+    var hardK=hard.filter(function(id){return known(Q[id])}).length,imgK=imgs.filter(function(id){return known(Q[id])}).length;
+    var sim=st._sim||[],last=sim.slice(-5),avg=last.length?last.reduce(function(a,x){return a+x[1]},0)/last.length:0;
+    var wr=Q.filter(wrong).length,tried=Object.keys(st).filter(function(k){return /^\d+$/.test(k)}).length;
+    var steps=[
+      {t:'Citește trucurile',d:'Capcanele și regulile care rezolvă zeci de întrebări. Durează 15 minute.',pct:st._tr?1:0,go:'Deschide trucurile',fn:openTricks},
+      {t:'Parcurge toată materia',d:'Citește sau ascultă fișele. La două treimi din întrebări e suficient să recunoști răspunsul corect.',pct:fisePct,lab:Math.round(fisePct*100)+'%',go:listenFrac>doneP/nonP?'Continuă ascultarea':'Deschide fișele',fn:listenFrac>doneP/nonP?function(){$('listenAll').click()}:function(){openList('g')}},
+      {t:'Învață cele '+hard.length+' de întrebări grele',d:'Singurele la care nu te ajută niciun truc. Citește fișa, apoi apasă „Testează-mă”.',pct:hard.length?hardK/hard.length:0,lab:hardK+' / '+hard.length,go:'Deschide fișa',fn:function(){openSheet('g',hi)}},
+      {t:'Recunoaștere din poze',d:'Cu pozele alb-negru, ca la examen.',pct:imgs.length?imgK/imgs.length:0,lab:imgK+' / '+imgs.length,go:'Deschide fișa',fn:function(){openSheet('g',ii)}},
+      {t:'Simulări până la media 24',d:last.length?'Media ultimelor '+last.length+': '+avg.toFixed(1).replace('.',',')+' din 30. Cu media 24 ești în siguranță.':'Câte o simulare de 60 de minute, ca la examen. Pragul e 20 din 30, ținta ta e media 24.',pct:last.length?Math.min(1,avg/24):0,lab:last.length?avg.toFixed(1).replace('.',',')+' / 24':'',go:EX?'Continuă simularea':'Începe o simulare',fn:function(){$('startExam').click()}},
+      {t:'Repetă greșelile',d:wr?'Ai '+wr+' '+(wr===1?'întrebare greșită':'întrebări greșite')+'. Repetă-le până nu mai rămâne niciuna.':(tried?'Nu ai nicio greșeală de repetat.':'După primele teste, aici se adună ce ai greșit.'),pct:tried&&!wr?1:0,go:wr?'Repetă greșelile':'',fn:function(){$('startWrong').click()}}
+    ];
+    var ol=$('steps');ol.innerHTML='';
+    steps.forEach(function(s){
+      var li=document.createElement('li');if(s.pct>=1)li.className='done';
+      li.innerHTML='<span class="t"></span><span class="d"></span>'+(s.pct<1&&s.lab!==undefined&&s.lab!==''?'<span class="row"><span class="bar"><i style="width:'+Math.round(s.pct*100)+'%"></i></span><small></small></span>':'')+(s.go&&s.pct<1?'<button class="go"></button>':'');
+      li.querySelector('.t').textContent=s.t;li.querySelector('.d').textContent=s.d;
+      var sm=li.querySelector('small');if(sm)sm.textContent=s.lab;
+      var b=li.querySelector('.go');if(b){b.textContent=s.go;b.onclick=s.fn}
+      ol.appendChild(li);
+    });
+    var box=$('today'),items=[];
+    if(d===null){box.innerHTML='<b class="h">Ce faci acum</b>Setează data examenului mai sus și îți împart materia pe zile. Până atunci, urmează pașii de mai jos în ordine.';return}
+    if(d<0){box.innerHTML='<b class="h">Examenul a trecut</b>Dacă mai ai unul, apasă „Schimbă data” mai sus.';return}
+    if(d===0){box.innerHTML='<b class="h">Azi e examenul. Succes!</b><ul><li>Ai 60 de minute pentru 30 de întrebări, adică 2 minute pe întrebare.</li><li>Răspunde întâi la ce știi sau recunoști.</li><li>Apoi taie capcanele, iar la final ghicește după reguli (punctul 6 din Trucuri).</li></ul>';return}
+    if(d===1){items=['2–3 simulări, ca să vezi unde ești','Repetă greșelile până nu mai ai niciuna','Recitește trucurile','Seara nu mai învăța nimic nou și culcă-te devreme'];}
+    else{
+      var sd=d-1;
+      if(!st._tr)items.push('Citește trucurile (15 minute)');
+      if(fiseLeft>0)var nf=Math.ceil(fiseLeft/sd);items.push('Parcurge '+(nf===1?'o fișă':nf+(nf>=20?' de fișe':' fișe'))+', citit sau ascultat');
+      var hl=hard.length-hardK;if(hl>0)var nh=Math.ceil(hl/sd);items.push('Învață '+(nh===1?'o întrebare':nh+(nh>=20?' de întrebări':' întrebări'))+' din cele grele');
+      var il=imgs.length-imgK;if(il>0&&d<=7)items.push('Treci prin fișa cu poze');
+      items.push(d>10?'Fă o simulare la două-trei zile':'Fă o simulare');
+      items.push('Repetă greșelile până nu mai ai niciuna');
+    }
+    box.innerHTML='<b class="h">'+(d===1?'Azi, ultima zi înainte de examen':'Ce faci azi')+'</b><ul></ul>'+(d>1?'<span class="hint" style="display:block;margin:6px 0 0;font-size:.88rem">Ultima zi înainte de examen o păstrezi doar pentru simulări și recapitulare.</span>':'');
+    var ul=box.querySelector('ul');items.forEach(function(x){var li=document.createElement('li');li.textContent=x;ul.appendChild(li)});
+  }
+  function openTricks(){stopAudio();st._tr=1;save();show('tricks')}
+  $('goTricks').onclick=openTricks;
+  $('tricksBack').onclick=function(){renderHome();show('home')};
   $('goSheets').onclick=function(){openList('g')};
   $('goTables').onclick=function(){openList('t')};
   $('sheetsBack').onclick=function(){renderHome();show('home')};
