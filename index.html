@@ -337,17 +337,17 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
       <li>Pozele se repetă în grupuri de câte trei, dar ordinea A, B, C se schimbă. Învață un semn pentru fiecare poză, nu litera.</li>
       <li>Rața mare: guler alb. Lingurarul: cioc ca o lingură. Rața moțată: moț. Gârlița: frunte albă. Corbul: cel mai mare, cioc masiv. Stăncuța: ochi alb. Porumbelul gulerat: pată albă pe gât. Guguștiucul: semilună neagră pe ceafă. Cocoșul de munte: coadă în evantai. Cocoșul de mesteacăn: coadă în formă de liră.</li>
     </ul>
-    <h2>6. Când nu știi deloc</h2>
+    <h2>6. Când nu ești sigur</h2>
     <ul>
       <li>Taie capcanele de la punctul 1.</li>
       <li>Dacă variantele sunt numere, alege mijlocul.</li>
       <li>Altfel, alege <b>varianta cea mai lungă</b>, dar nu pe cea care le adună pe celelalte (aceea e corectă doar în 22% din cazuri).</li>
-      <li>Așa nimerești 45% din întrebări, față de 33% la ghicit pur.</li>
+      <li>Urmând pașii ăștia răspunzi corect la 45% din întrebările pe care nu le știi, față de 33% cu o alegere la întâmplare.</li>
     </ul>
     <h2>7. La examen</h2>
     <ul>
-      <li>La simulatorul AJVPS Caraș-Severin, examenul are 60 de minute pentru 30 de întrebări. Întreabă la asociația ta dacă și la tine e la fel.</li>
-      <li>Răspunde întâi la ce știi sau recunoști, apoi taie capcanele, iar la final ghicește după punctul 6.</li>
+      <li>Ai 60 de minute pentru 30 de întrebări, adică 2 minute pe întrebare.</li>
+      <li>Răspunde întâi la ce știi sau recunoști, apoi taie capcanele, iar la întrebările rămase alege după regulile de la punctul 6.</li>
       <li>Ai nevoie de cel puțin 20 de răspunsuri corecte din 30.</li>
     </ul>
     <div class="spacer"></div>
@@ -728,7 +728,7 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
     var box=$('today'),items=[];
     if(d===null){box.innerHTML='<b class="h">Ce faci acum</b>Setează data examenului mai sus și îți împart materia pe zile. Până atunci, urmează pașii de mai jos în ordine.';return}
     if(d<0){box.innerHTML='<b class="h">Examenul a trecut</b>Dacă mai ai unul, apasă „Schimbă data” mai sus.';return}
-    if(d===0){box.innerHTML='<b class="h">Azi e examenul. Succes!</b><ul><li>Ai în jur de 2 minute pe întrebare, deci nu te grăbi.</li><li>Răspunde întâi la ce știi sau recunoști.</li><li>Apoi taie capcanele, iar la final ghicește după reguli (punctul 6 din Trucuri).</li></ul>';return}
+    if(d===0){box.innerHTML='<b class="h">Azi e examenul. Succes!</b><ul><li>Ai 60 de minute pentru 30 de întrebări, adică 2 minute pe întrebare.</li><li>Răspunde întâi la ce știi sau recunoști.</li><li>Apoi taie capcanele, iar la întrebările rămase alege după regulile de la punctul 6 din Trucuri.</li></ul>';return}
     if(d===1){items=['2–3 simulări, ca să vezi unde ești','Repetă greșelile până nu mai ai niciuna','Recitește trucurile','Seara nu mai învăța nimic nou și culcă-te devreme'];}
     else{
       var sd=d-1;
