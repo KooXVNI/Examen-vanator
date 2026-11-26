@@ -200,6 +200,21 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
 .tricks ul{padding-left:20px;margin:6px 0}.tricks li{margin:5px 0;line-height:1.45}
 .card.wide{grid-column:1/-1}
 .seg.tabs{margin:18px 0 0}
+.calgrp{margin:20px 0 4px;font-family:var(--serif);font-weight:700;font-size:1.1rem}
+.calnote{color:var(--muted);font-size:.9rem;margin:0 0 6px}
+.axis{position:sticky;top:calc(env(safe-area-inset-top,0px) + 52px);z-index:4;background:var(--bg);display:grid;grid-template-columns:repeat(12,1fr);font-size:.72rem;color:var(--muted);text-align:center;padding:6px 0 4px;border-bottom:1px solid var(--line)}
+.axis span{border-left:1px solid var(--line)}
+.crow{padding:7px 0 6px;border-bottom:1px solid var(--line)}
+.crow .nm{display:flex;justify-content:space-between;gap:8px;font-size:.95rem;line-height:1.3}
+.crow .nm b{font-weight:600}
+.crow .nm small{color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.track{position:relative;height:12px;margin-top:5px;border-radius:6px;background:repeating-linear-gradient(90deg,var(--track) 0 1px,transparent 1px calc(100%/12));background-color:color-mix(in srgb,var(--track) 35%,transparent)}
+.track i{position:absolute;top:0;bottom:0;border-radius:6px;background:var(--blaze)}
+.track i.all{background:var(--ok)}
+.track .now{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink);border-radius:1px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:.85rem;margin:8px 0}
+.legend span::before{content:"";display:inline-block;width:14px;height:8px;border-radius:4px;background:var(--blaze);margin-right:6px;vertical-align:middle}
+.legend span.n::before{width:2px;height:14px;background:var(--ink)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -235,6 +250,7 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
     <div class="cards">
       <button class="card" id="goSheets"><i></i><b>Fișe</b><span>Pe specii și pe capitole, cu răspunsul direct. Le poți și asculta.</span></button>
       <button class="card" id="goTables"><i></i><b>Tabele</b><span>Perioade de vânătoare, împerechere, gestație, coarne.</span></button>
+      <button class="card wide" id="goCal"><i></i><b>Calendarul vânătorii</b><span>Toate perioadele pe o linie a timpului, pe grupe de specii, în ordinea în care se deschid.</span></button>
       <button class="card wide" id="goTricks"><i></i><b>Trucuri</b><span>Capcanele care nu sunt niciodată corecte și regulile care rezolvă zeci de întrebări deodată.</span></button>
     </div>
     <label class="switch"><span>Poze alb-negru, ca la examen<small>Așa exersezi recunoașterea fără culori.</small></span><input type="checkbox" id="bwSwitch"></label>
@@ -293,6 +309,18 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
   </div>
 </main>
 
+<main id="calendar" class="hidden">
+  <div class="qbar"><div class="qbar-in"><button class="back" id="calBack">‹ Acasă</button><span class="qmeta">din grilele oficiale</span></div></div>
+  <div class="wrap">
+    <h1 class="sheet-title">Calendarul vânătorii</h1>
+    <p class="hint">Linia începe în mai și se termină în aprilie, ca să se vadă fiecare sezon întreg, fără să se rupă la Anul Nou. În fiecare grupă, speciile sunt în ordinea în care se deschide vânătoarea.</p>
+    <div class="legend"><span>perioada de vânătoare</span><span class="n">azi</span></div>
+    <div class="axis"><span>mai</span><span>iun</span><span>iul</span><span>aug</span><span>sep</span><span>oct</span><span>nov</span><span>dec</span><span>ian</span><span>feb</span><span>mar</span><span>apr</span></div>
+    <div id="calList"></div>
+    <div class="spacer"></div>
+  </div>
+</main>
+
 <main id="tricks" class="hidden">
   <div class="qbar"><div class="qbar-in"><button class="back" id="tricksBack">‹ Acasă</button><span class="qmeta">verificate pe toate grilele</span></div></div>
   <div class="wrap tricks">
@@ -310,6 +338,7 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
       <li>Căpriorul, capra neagră și muflonul se vânează cu autorizație <b>individuală</b>, niciodată colectivă sau în grup restrâns. Mistrețul, cu individuală sau colectivă.</li>
     </ul>
     <h2>2. Perioade de vânătoare</h2>
+    <button class="btn btn-secondary" id="calFromTricks" style="margin:6px 0">Vezi-le pe calendar</button>
     <ul>
       <li><b>Mereu greșite:</b> „1 sept – 15 martie” și „15 mai – 15 oct”. La păsări, tot greșite sunt și perioadele care încep pe 1 sau 20 august sau se termină în noiembrie (singura excepție: cocoșul de munte, 30 noiembrie).</li>
       <li><b>„1 sept – 15 feb”</b> e doar pentru femelele de cervide și rața mare. <b>„1 nov – 31 ian”</b> e doar pentru iepuri.</li>
@@ -373,6 +402,7 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
   <div class="wrap">
     <h1 class="sheet-title" id="sheetsTitle"></h1>
     <p class="hint" id="sheetsHint"></p>
+    <button class="btn btn-primary hidden" id="calLink" style="margin:4px 0 8px">Vezi perioadele pe calendar</button>
     <div id="sheetsList"></div>
     <div class="spacer"></div>
   </div>
@@ -469,7 +499,7 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
   }
 
   var S=null;
-  function show(id){['home','quiz','result','sheets','sheet','tricks'].forEach(function(x){$(x).classList.toggle('hidden',x!==id)});window.scrollTo(0,0)}
+  function show(id){['home','quiz','result','sheets','sheet','tricks','calendar'].forEach(function(x){$(x).classList.toggle('hidden',x!==id)});window.scrollTo(0,0)}
   var EX=null;
   function start(list,label,learn,from,exam){stopAudio();if(exam){stopTimer();EX=null}S={exam:!!exam,ans:exam?list.map(function(){return null}):null,list:list,i:0,label:label,score:0,missed:[],learn:!!learn,from:from||null};$('quit').textContent=from?'‹ Fișa':'‹ Acasă';$('home2').textContent=from?'Înapoi la fișă':'Înapoi acasă';$('quit').textContent=exam?'‹ Meniu':$('quit').textContent;show('quiz');if(exam){EX=S;S.prevT={};list.forEach(function(q){S.prevT[q.id]=st._t?st._t[q.id]:undefined});startTimer();persistEx()}renderQ()}
   function seenT(q){return (st._t&&st._t[q.id])||(st[q.id]?1:0)}
@@ -651,6 +681,7 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
     stopAudio();view.mode=mode;show('sheets');
     var arr=mode==='g'?G:T;
     $('sheetsTitle').textContent=mode==='g'?'Fișe':'Tabele de recapitulare';
+    var cl=$('calLink');if(cl)cl.classList.toggle('hidden',mode!=='t');
     $('sheetsHint').textContent=mode==='g'?'Toate întrebările despre aceeași specie sau temă, adunate la un loc, cu răspunsul corect. Citește sau ascultă fișa, apoi testează-te pe ea.':'Lucrurile care se încurcă ușor, puse una lângă alta. La perioadele de vânătoare contează și ziua.';
     var box=$('sheetsList');box.innerHTML='';var lastK=null,ul=null,done=0;
     arr.forEach(function(g,i){
@@ -766,6 +797,55 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
   function openTricks(){stopAudio();st._tr=1;save();show('tricks')}
   $('goTricks').onclick=openTricks;
   $('tricksBack').onclick=function(){renderHome();show('home')};
+
+  var CAL=[
+    ['Cervide, capră neagră și muflon','Trofeul se deschide odată cu împerecherea. Femelele și vițeii merg toți până pe 15 februarie.',[
+      ['Căprior mascul',5,1,10,15],['Cerb comun, selecție',9,1,12,31],['Cerb comun, femelă și vițel',9,1,2,15],['Lopătar, selecție',9,1,12,15],['Lopătar, femelă și vițel',9,1,2,15],['Căprior femelă',9,1,2,15],['Capră neagră, selecție',9,1,12,15],['Cerb comun, trofeu',9,10,11,15],['Muflon',9,15,12,15],['Lopătar, trofeu',10,10,12,1],['Capră neagră, trofeu',10,15,12,15]]],
+    ['Mistreț și iepuri','',[
+      ['Mistreț femelă și purcel',6,1,1,31],['Iepure de câmp',11,1,1,31],['Iepure de vizuină',11,1,1,31]]],
+    ['Răpitoare și rozătoare','Răpitoarele cu blană merg până la sfârșitul lui martie. Șacalul se vânează tot anul.',[
+      ['Șacal',0],['Viezure',8,1,3,31],['Bizam',9,1,4,15],['Jderi',9,15,3,31],['Câine enot',9,15,3,31]]],
+    ['Rațe și gâște','Regula de bază e „15 la 15”. Restul sunt excepții.',[
+      ['Rața sulițar',8,15,1,31],['Lingurar, cap castaniu, pestriță, sunătoare, cap negru, gâsca de vară',8,15,2,15],['Rața mare',9,1,2,15],['Cârâitoare și rața mică',9,1,2,10],['Rața moțată',9,15,2,10],['Gârlița mare',10,15,2,15]]],
+    ['Alte păsări de baltă și pădure','Toate au aceeași perioadă.',[
+      ['Găinușa de baltă, cormoranul mare, becațina, sitarul',9,1,2,28]]],
+    ['Vânat cu pene de câmp și munte','',[
+      ['Prepeliță',8,15,10,31],['Cocoș de munte mascul',9,10,11,30],['Potârniche',9,15,12,31],['Ciocârlie',9,15,10,31],['Fazan',10,1,2,28]]],
+    ['Porumbei, turturele, sturzi, graur','',[
+      ['Turturică',8,15,9,30],['Guguștiuc și graur',8,15,2,28],['Porumbel gulerat și de scorbură',9,1,2,10],['Sturzii (toți patru)',9,1,2,28]]],
+    ['Ciori și gaiță','Sezoane lungi, pentru că fac pagube. Gaița e la fel ca păsările obișnuite.',[
+      ['Cioară grivă și coțofană',6,1,3,31],['Stăncuță',7,10,3,20],['Cioară de semănătură',8,15,1,31],['Gaiță',9,1,2,28]]]
+  ];
+  var MD=[31,30,31,31,30,31,30,31,31,28,31,30];/* mai..aprilie */
+  function sday(m,d){var i=(m+7)%12,s=0;for(var k=0;k<i;k++)s+=MD[k];return s+d-1}
+  var LS=['','ian','feb','mar','apr','mai','iun','iul','aug','sep','oct','nov','dec'];
+  function renderCal(){
+    var box=$('calList');if(box.dataset.done)return;box.dataset.done=1;
+    var t=new Date(),nowP=(sday(t.getMonth()+1,Math.min(t.getDate(),MD[(t.getMonth()+1+7)%12]))+.5)/365*100;
+    CAL.forEach(function(g){
+      var hdr=document.createElement('p');hdr.className='calgrp';hdr.textContent=g[0];box.appendChild(hdr);
+      if(g[1]){var nt=document.createElement('p');nt.className='calnote';nt.textContent=g[1];box.appendChild(nt)}
+      g[2].forEach(function(r){
+        var row=document.createElement('div');row.className='crow';
+        var all=r.length===2,txt=all?'tot anul':r[2]+' '+LS[r[1]]+' – '+r[4]+' '+LS[r[3]];
+        row.innerHTML='<div class="nm"><b></b><small></small></div><div class="track"><i></i><span class="now"></span></div>';
+        row.querySelector('b').textContent=r[0];row.querySelector('small').textContent=txt;
+        var bar=row.querySelector('i');
+        if(all){bar.className='all';bar.style.left='0';bar.style.width='100%'}
+        else{var a=sday(r[1],r[2]),b=sday(r[3],r[4]);bar.style.left=(a/365*100)+'%';bar.style.width=((b-a+1)/365*100)+'%'}
+        row.querySelector('.now').style.left=nowP+'%';
+        box.appendChild(row);
+      });
+    });
+    var x=document.createElement('p');x.className='calnote';x.style.marginTop='18px';
+    x.textContent='Nu se vânează: femela de cocoș de munte și cocoșul de mesteacăn. Ursul, lupul, râsul, pisica sălbatică, vidra și nurca se vânează doar prin derogare de la lege.';
+    box.appendChild(x);
+  }
+  function openCal(){stopAudio();renderCal();$('calBack').textContent=view.calFrom==='tables'?'‹ Tabele':view.calFrom==='tricks'?'‹ Trucuri':'‹ Acasă';show('calendar')}
+  $('goCal').onclick=function(){view.calFrom=null;openCal()};
+  $('calFromTricks').onclick=function(){view.calFrom='tricks';openCal()};
+  $('calLink').onclick=function(){view.calFrom='tables';openCal()};
+  $('calBack').onclick=function(){if(view.calFrom==='tables'){view.calFrom=null;openList('t')}else if(view.calFrom==='tricks'){view.calFrom=null;show('tricks')}else{renderHome();show('home')}};
   $('goSheets').onclick=function(){openList('g')};
   $('goTables').onclick=function(){openList('t')};
   $('sheetsBack').onclick=function(){renderHome();show('home')};
