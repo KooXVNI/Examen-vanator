@@ -506,8 +506,8 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
     var p0=st._p||0;$('listenAll').textContent=p0?'Continuă ascultarea':'Ascultă toată materia';
     $('listenAllHint').textContent=(p0?'Ai rămas la întrebarea '+(p0+1)+' din '+Q.length+'.':'Toate cele '+Q.length+' de întrebări, fișă după fișă, fără pauză între ele.')+' Ecranul rămâne aprins cât timp citește.';
     var unseen=Q.filter(function(q){return !seenT(q)}).length;
-    var rot=unseen?'Nevăzute încă la teste: <b>'+unseen+'</b> din '+Q.length+'. Testele le iau întâi pe acestea, apoi pe cele văzute cel mai demult.':'Ai văzut toate întrebările. Testele aduc acum întâi întrebările văzute cel mai demult.';
-    var nwt=wtList().length;if(nwt)rot+=' Întrebările greșite la teste ('+'<b>'+nwt+'</b>'+') revin în testele următoare, câte cel mult '+WTMAX+' pe test, până le răspunzi corect.';
+    var rot=unseen?'Neparcurse încă la teste: <b>'+unseen+'</b> din '+Q.length+'. Testele le iau întâi pe acestea, la întâmplare, apoi pe cele parcurse cel mai demult.':'Ai văzut toate întrebările. Testele aduc acum întâi întrebările văzute cel mai demult.';
+    var nwt=wtList().length;if(nwt)rot+=' Dintre ele, <b>'+nwt+'</b> sunt întrebări greșite la teste, puse înapoi printre cele neparcurse până le răspunzi corect.';
     var ab=$('abandonExam');ab.classList.remove('arm');
     if(EX){var rr=Math.max(0,Math.round((EX.end-Date.now())/1000));$('startExam').textContent='Continuă simularea · mai ai '+fmt(rr);ab.textContent='Renunță la simularea începută';ab.classList.remove('hidden')}
     else{$('startExam').textContent='Simulare examen: 30 de întrebări, 60 de minute';ab.classList.add('hidden')}
@@ -543,17 +543,14 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
   function show(id){['home','quiz','result','sheets','sheet','tricks','calendar','history'].forEach(function(x){$(x).classList.toggle('hidden',x!==id)});window.scrollTo(0,0)}
   var EX=null;
   function start(list,label,learn,from,exam){stopAudio();if(exam){stopTimer();EX=null}S={exam:!!exam,ans:exam?list.map(function(){return null}):null,list:list,i:0,label:label,score:0,missed:[],learn:!!learn,from:from||null};$('quit').textContent=from?'‹ Fișa':'‹ Acasă';$('home2').textContent=from?'Înapoi la fișă':'Înapoi acasă';S.t0=Date.now();S.log=[];$('quit').textContent=exam?'‹ Meniu':$('quit').textContent;show('quiz');if(exam){EX=S;S.prevT={};list.forEach(function(q){S.prevT[q.id]=st._t?st._t[q.id]:undefined});startTimer();persistEx()}renderQ()}
-  function seenT(q){return (st._t&&st._t[q.id])||(st[q.id]?1:0)}
-  var WTMAX=10;
+  function seenT(q){if(st._wt&&st._wt[q.id])return 0;return (st._t&&st._t[q.id])||(st[q.id]?1:0)}
   if(!st._wt){st._wt={};Q.forEach(function(q){if(wrong(q))st._wt[q.id]=1});save()}
   function markWT(q,ok){if(ok)delete st._wt[q.id];else if(!st._wt[q.id])st._wt[q.id]=Date.now()}
   function wtList(){return Object.keys(st._wt).map(Number).filter(function(id){return Q[id]}).sort(function(a,b){return st._wt[a]-st._wt[b]})}
   function freshPick(n){
-    var back=shuffle(wtList().slice(0,Math.min(WTMAX,n)).map(function(id){return Q[id]}));
-    var taken={};back.forEach(function(q){taken[q.id]=1});
-    var arr=shuffle(Q.filter(function(q){return !taken[q.id]})).map(function(q,k){return {q:q,t:seenT(q),k:k}});
+    var arr=shuffle(Q.slice()).map(function(q,k){return {q:q,t:seenT(q),k:k}});
     arr.sort(function(a,b){return a.t-b.t||a.k-b.k});
-    return shuffle(back.concat(arr.slice(0,n-back.length).map(function(x){return x.q})));
+    return shuffle(arr.slice(0,n).map(function(x){return x.q}));
   }
   function renderQ(){
     var q=S.list[S.i];
