@@ -636,7 +636,7 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
     E.score=0;E.missed=[];
     E.list.forEach(function(q,k){var j=E.ans[k],ok=same(q,j);var prev=st[q.id];st[q.id]=[ok?1:0,(prev?prev[1]:0)+1];if(ok)E.score++;else E.missed.push({q:q,y:j})});
     if(!st._sim)st._sim=[];st._sim.push([Date.now(),E.score]);if(st._sim.length>50)st._sim=st._sim.slice(-50);
-    addHist({k:'Simulare',s:E.score,of:E.list.length,d:Math.round(((E.endedAt||Math.min(Date.now(),E.end))-(E.end-3600000))/1000),q:E.list.map(function(q,k){return [q.id,E.ans[k]]})});
+    addHist({k:'Simulare',sim:1,s:E.score,of:E.list.length,d:Math.round(((E.endedAt||Math.min(Date.now(),E.end))-(E.end-3600000))/1000),q:E.list.map(function(q,k){return [q.id,E.ans[k]]})});
     EX=null;persistEx();
   }
   function openCount(E){var n=0;E.ans.forEach(function(x){if(x===null)n++});return n}
@@ -695,7 +695,7 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
       r.appendChild(li);
     });
   }
-  $('again').onclick=function(){start(shuffle(S.missed.map(function(m){return m.q})),S.label,false,S.from)};
+  $('again').onclick=function(){start(shuffle(S.missed.map(function(m){return m.q})),S.exam||S.label==='Simulare'?'Greșeli':S.label,false,S.exam?null:S.from)};
   $('home2').onclick=$('quit').onclick=function(){closeModal();$('qmeta').classList.remove('warn');if(S&&S.exam&&EX===S){persistEx();renderHome();show('home');return}if(S&&S.from){openSheet(S.from[0],S.from[1])}else{renderHome();show('home')}};
   $('modeLearn').onclick=function(){mode='learn';try{localStorage.setItem(KEY+'-mod',mode)}catch(e){}renderHome()};
   $('modeTest').onclick=function(){mode='test';try{localStorage.setItem(KEY+'-mod',mode)}catch(e){}renderHome()};
@@ -889,11 +889,13 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
   $('calLink').onclick=function(){view.calFrom='tables';openCal()};
   $('calBack').onclick=function(){if(view.calFrom==='tables'){view.calFrom=null;openList('t')}else if(view.calFrom==='tricks'){view.calFrom=null;show('tricks')}else{renderHome();show('home')}};
 
+  function isSim(e){return e.k==='Simulare'&&(e.sim===1||(e.sim===undefined&&e.of===30))}
   function addHist(e){e.t=Date.now();if(!st._h)st._h=[];st._h.push(e);if(st._h.length>100)st._h=st._h.slice(-100);save()}
   var LSH=['ian','feb','mar','apr','mai','iun','iul','aug','sep','oct','nov','dec'];
   function when(t){var d=new Date(t),m=d.getMinutes();return d.getDate()+' '+LSH[d.getMonth()]+', '+d.getHours()+':'+(m<10?'0':'')+m}
   function dur(s){if(s<60)return s+' s';var m=Math.round(s/60);return m+' min'}
   function kindName(k){return k==='Test'?'Test rapid':k==='Greșeli'?'Repetă greșelile':k}
+  (function(){var ch=false;(st._h||[]).forEach(function(e){if(e.k==='Simulare'&&e.sim===undefined){if(e.of===30)e.sim=1;else{e.k='Greșeli';ch=true}}});if(ch)save()})();
   var hFrom='home',hCur=null;
   function openHist(from){stopAudio();hFrom=from||'home';$('histBack').textContent=hFrom==='result'?'‹ Rezultat':'‹ Acasă';renderHistList();show('history')}
   function renderHistList(){
@@ -901,8 +903,8 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
     var H=st._h||[];$('histMeta').textContent=H.length?H.length+(H.length===1?' test':(H.length>=20?' de teste':' teste')):'';
     var sum=$('histSum'),ul=$('histList');sum.innerHTML='';ul.innerHTML='';
     if(!H.length){sum.innerHTML='<p class="hint">Încă nu ai niciun test terminat. După fiecare simulare sau test, rezultatul apare aici.</p>';return}
-    var sims=H.filter(function(e){return e.k==='Simulare'});
-    var oth=H.filter(function(e){return e.k!=='Simulare'});
+    var sims=H.filter(isSim);
+    var oth=H.filter(function(e){return !isSim(e)});
     var last5=sims.slice(-5),avg=last5.length?last5.reduce(function(a,e){return a+e.s},0)/last5.length:null;
     var pass=sims.filter(function(e){return e.s>=20}).length;
     var pct=oth.length?Math.round(oth.reduce(function(a,e){return a+e.s},0)*100/oth.reduce(function(a,e){return a+e.of},0)):null;
@@ -918,12 +920,12 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
     }
     H.slice().reverse().forEach(function(e,ri){
       var idx=H.length-1-ri,li=document.createElement('li'),b=document.createElement('button');
-      var isSim=e.k==='Simulare',ok=e.s>=20;
+      var sim=isSim(e),ok=e.s>=20;
       b.innerHTML='<span class="k"></span><span class="m"></span><span class="sc"></span>';
       b.querySelector('.k').textContent=kindName(e.k);
       b.querySelector('.m').textContent=when(e.t)+' · '+dur(e.d);
       var sc=b.querySelector('.sc');sc.textContent=e.s+'/'+e.of;
-      if(isSim){var s=document.createElement('small');s.className=ok?'ok':'bad';s.textContent=ok?'ADMIS':'RESPINS';sc.appendChild(s)}
+      if(sim){var s=document.createElement('small');s.className=ok?'ok':'bad';s.textContent=ok?'ADMIS':'RESPINS';sc.appendChild(s)}
       b.onclick=function(){openHistDetail(idx)};
       li.appendChild(b);ul.appendChild(li);
     });
@@ -932,7 +934,7 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
   function openHistDetail(i){
     hCur=i;var e=st._h[i];
     $('histListView').classList.add('hidden');$('histDetail').classList.remove('hidden');window.scrollTo(0,0);
-    $('hdTitle').textContent=kindName(e.k)+': '+e.s+' din '+e.of+(e.k==='Simulare'?(e.s>=20?' · ADMIS':' · RESPINS'):'');
+    $('hdTitle').textContent=kindName(e.k)+': '+e.s+' din '+e.of+(isSim(e)?(e.s>=20?' · ADMIS':' · RESPINS'):'');
     $('hdMeta').textContent=when(e.t)+' · durată '+dur(e.d)+' · greșite: '+(e.of-e.s);
     renderHd();
   }
