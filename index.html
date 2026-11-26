@@ -373,24 +373,22 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
       <li><b>Arii protejate:</b> în parcurile naționale, rezervațiile științifice și zonele strict protejate sau tampon, răspunsul e „nu, cu excepția cazurilor prevăzute de lege” (6 din 7). Excepția: în parcurile <b>naturale</b> se poate, cu avizul administrației parcului.</li>
       <li><b>„Nu, fără excepții”</b> e corect de 18 ori din 31, la interdicțiile clare: alcool, furtună, arbaletă, ogari, substanțe toxice, alice mai mari de 5 mm, urs la bârlog, comerț făcut de persoane fizice (carne, trofee, mezeluri), autorizație pe mai multe fonduri, cocoșul de mesteacăn. Când variantele sunt „nu, fără excepții” și „da, prin derogare”, alege derogarea.</li>
     </ul>
-    <h2>4. Numere</h2>
-    <ul><li>Dacă toate variantele sunt numere, <b>valoarea din mijloc</b> (după valoare, nu după poziție) e corectă în 52% din cazuri (46 din 88 de întrebări), cea mai mare în 30%, iar cea mai mică doar în 18%.</li><li><b>Nu e o regulă sigură</b>, ci doar cea mai bună alegere când nu știi răspunsul. Dacă știi, răspunde după ce știi.</li></ul>
-    <h2>5. Poze</h2>
+    <h2>4. Poze</h2>
     <ul>
       <li>Pozele se repetă în grupuri de câte trei, dar ordinea A, B, C se schimbă. Învață un semn pentru fiecare poză, nu litera.</li>
       <li>Rața mare: guler alb. Lingurarul: cioc ca o lingură. Rața moțată: moț. Gârlița: frunte albă. Corbul: cel mai mare, cioc masiv. Stăncuța: ochi alb. Porumbelul gulerat: pată albă pe gât. Guguștiucul: semilună neagră pe ceafă. Cocoșul de munte: coadă în evantai. Cocoșul de mesteacăn: coadă în formă de liră.</li>
     </ul>
-    <h2>6. Când nu ești sigur</h2>
+    <h2>5. Când nu ești sigur</h2>
     <ul>
       <li>Taie capcanele de la punctul 1.</li>
-      <li>Dacă variantele sunt numere, alege valoarea din mijloc. Nu e sigur, dar e cea mai bună șansă: corectă cam o dată din două.</li>
+      <li>Dacă toate variantele sunt numere, alege <b>valoarea din mijloc</b> (după valoare, nu după poziție). E corectă în 52% din cazuri (46 din 88 de întrebări), cea mai mare în 30%, iar cea mai mică doar în 18%. Nu e sigur, dar e cea mai bună șansă.</li>
       <li>Altfel, alege <b>varianta cea mai lungă</b>, dar nu pe cea care le adună pe celelalte (aceea e corectă doar în 22% din cazuri).</li>
       <li>Urmând pașii ăștia răspunzi corect la 45% din întrebările pe care nu le știi, față de 33% cu o alegere la întâmplare.</li>
     </ul>
-    <h2>7. La examen</h2>
+    <h2>6. La examen</h2>
     <ul>
       <li>Ai 60 de minute pentru 30 de întrebări, adică 2 minute pe întrebare.</li>
-      <li>Răspunde întâi la ce știi sau recunoști, apoi taie capcanele, iar la întrebările rămase alege după regulile de la punctul 6.</li>
+      <li>Răspunde întâi la ce știi sau recunoști, apoi taie capcanele, iar la întrebările rămase alege după regulile de la punctul 5.</li>
       <li>Ai nevoie de cel puțin 20 de răspunsuri corecte din 30.</li>
     </ul>
     <div class="spacer"></div>
@@ -773,7 +771,7 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
     var box=$('today'),items=[];
     if(d===null){box.innerHTML='<b class="h">Ce faci acum</b>Setează data examenului mai sus și îți împart materia pe zile. Până atunci, urmează pașii de mai jos în ordine.';return}
     if(d<0){box.innerHTML='<b class="h">Examenul a trecut</b>Dacă mai ai unul, apasă „Schimbă data” mai sus.';return}
-    if(d===0){box.innerHTML='<b class="h">Azi e examenul. Succes!</b><ul><li>Ai 60 de minute pentru 30 de întrebări, adică 2 minute pe întrebare.</li><li>Răspunde întâi la ce știi sau recunoști.</li><li>Apoi taie capcanele, iar la întrebările rămase alege după regulile de la punctul 6 din Trucuri.</li></ul>';return}
+    if(d===0){box.innerHTML='<b class="h">Azi e examenul. Succes!</b><ul><li>Ai 60 de minute pentru 30 de întrebări, adică 2 minute pe întrebare.</li><li>Răspunde întâi la ce știi sau recunoști.</li><li>Apoi taie capcanele, iar la întrebările rămase alege după regulile de la punctul 5 din Trucuri.</li></ul>';return}
     if(d===1){items=['2–3 simulări, ca să vezi unde ești','Repetă greșelile până nu mai ai niciuna','Recitește trucurile','Seara nu mai învăța nimic nou și culcă-te devreme'];}
     else{
       var sd=d-1;
