@@ -37,5 +37,4 @@ Nu ai nevoie de cont și nu plătești nimic. După prima deschidere, aplicația
 
 - Progresul se salvează doar pe dispozitivul tău. Nimeni nu vede ce ai răspuns, iar pe fiecare telefon sau calculator pornești de la zero.
 - Dacă vrei să o iei de la capăt, ai butonul „Șterge progresul” jos pe prima pagină.
-- Actualizările apar automat data viitoare când deschizi aplicația cu internetul pornit.
 - Aplicația e un instrument de învățare și nu înlocuiește examenul oficial.
