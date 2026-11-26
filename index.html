@@ -675,7 +675,7 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
     if(S.exam){
       stopTimer();$('qmeta').classList.remove('warn');S.endedAt=Date.now();scoreEx(S);
     }
-    if(!S.exam&&!S.learn&&S.log&&S.log.length===S.list.length){var nm=S.label;if(S.from){var arr=S.from[0]==='g'?G:T;nm='Fișa: '+arr[S.from[1]].t}addHist({k:nm,s:S.score,of:S.list.length,d:Math.round((Date.now()-S.t0)/1000),q:S.log.slice()})}
+    if(!S.exam&&!S.learn&&S.label==='Test'&&S.log&&S.log.length===S.list.length){var nm=S.label;if(S.from){var arr=S.from[0]==='g'?G:T;nm='Fișa: '+arr[S.from[1]].t}addHist({k:nm,s:S.score,of:S.list.length,d:Math.round((Date.now()-S.t0)/1000),q:S.log.slice()})}
     show('result');
     var bd=$('examBadge');bd.classList.toggle('hidden',!S.exam);
     if(S.exam){var pass=S.score>=20;bd.className='badge '+(pass?'ok':'bad');bd.textContent=pass?'ADMIS':'RESPINS'}
@@ -895,21 +895,21 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
   function when(t){var d=new Date(t),m=d.getMinutes();return d.getDate()+' '+LSH[d.getMonth()]+', '+d.getHours()+':'+(m<10?'0':'')+m}
   function dur(s){if(s<60)return s+' s';var m=Math.round(s/60);return m+' min'}
   function kindName(k){return k==='Test'?'Test rapid':k==='Greșeli'?'Repetă greșelile':k}
-  (function(){var ch=false;(st._h||[]).forEach(function(e){if(e.k==='Simulare'&&e.sim===undefined){if(e.of===30)e.sim=1;else{e.k='Greșeli';ch=true}}});if(ch)save()})();
+  (function(){if(!st._h)return;var n=st._h.length;st._h.forEach(function(e){if(e.k==='Simulare'&&e.sim===undefined&&e.of===30)e.sim=1});st._h=st._h.filter(function(e){return isSim(e)||e.k==='Test'});if(st._h.length!==n)save()})();
   var hFrom='home',hCur=null;
   function openHist(from){stopAudio();hFrom=from||'home';$('histBack').textContent=hFrom==='result'?'‹ Rezultat':'‹ Acasă';renderHistList();show('history')}
   function renderHistList(){
     $('histListView').classList.remove('hidden');$('histDetail').classList.add('hidden');
     var H=st._h||[];$('histMeta').textContent=H.length?H.length+(H.length===1?' test':(H.length>=20?' de teste':' teste')):'';
     var sum=$('histSum'),ul=$('histList');sum.innerHTML='';ul.innerHTML='';
-    if(!H.length){sum.innerHTML='<p class="hint">Încă nu ai niciun test terminat. După fiecare simulare sau test, rezultatul apare aici.</p>';return}
+    if(!H.length){sum.innerHTML='<p class="hint">Încă nu ai niciun test terminat. Aici apar simulările de examen și testele rapide, după ce le termini.</p>';return}
     var sims=H.filter(isSim);
     var oth=H.filter(function(e){return !isSim(e)});
     var last5=sims.slice(-5),avg=last5.length?last5.reduce(function(a,e){return a+e.s},0)/last5.length:null;
     var pass=sims.filter(function(e){return e.s>=20}).length;
     var pct=oth.length?Math.round(oth.reduce(function(a,e){return a+e.s},0)*100/oth.reduce(function(a,e){return a+e.of},0)):null;
     var g=document.createElement('div');g.className='hsum';
-    g.innerHTML='<div><b>'+(avg===null?'–':avg.toFixed(1).replace('.',','))+'</b><span>media ultimelor '+(last5.length||'')+' simulări (ținta: 24)</span></div><div><b>'+(sims.length?pass+' / '+sims.length:'–')+'</b><span>simulări cu ADMIS</span></div><div><b>'+oth.length+'</b><span>alte teste terminate</span></div><div><b>'+(pct===null?'–':pct+'%')+'</b><span>răspunsuri corecte la celelalte teste</span></div>';
+    g.innerHTML='<div><b>'+(avg===null?'–':avg.toFixed(1).replace('.',','))+'</b><span>'+(last5.length===1?'scorul ultimei simulări':'media ultimelor '+(last5.length||'')+' simulări')+' (ținta: 24)</span></div><div><b>'+(sims.length?pass+' / '+sims.length:'–')+'</b><span>simulări cu ADMIS</span></div><div><b>'+oth.length+'</b><span>teste rapide terminate</span></div><div><b>'+(pct===null?'–':pct+'%')+'</b><span>răspunsuri corecte la testele rapide</span></div>';
     sum.appendChild(g);
     if(sims.length>1){
       var sp=document.createElement('div');sp.className='spark';sp.setAttribute('aria-label','Scorurile simulărilor, în ordine');
