@@ -215,6 +215,24 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
 .legend{display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:.85rem;margin:8px 0}
 .legend span::before{content:"";display:inline-block;width:14px;height:8px;border-radius:4px;background:var(--blaze);margin-right:6px;vertical-align:middle}
 .legend span.n::before{width:2px;height:14px;background:var(--ink)}
+.hsum{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0 4px}
+.hsum div{background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:12px}
+.hsum b{display:block;font-family:var(--serif);font-size:1.5rem;line-height:1.1}
+.hsum span{color:var(--muted);font-size:.88rem}
+.spark{display:flex;align-items:flex-end;gap:4px;height:70px;margin:10px 0 2px;padding:0 2px;border-bottom:1px solid var(--line);position:relative}
+.spark i{flex:1;max-width:22px;border-radius:4px 4px 0 0;background:var(--bad)}
+.spark i.ok{background:var(--ok)}
+.spark .thr{position:absolute;left:0;right:0;border-top:1.5px dashed var(--muted)}
+.hlist{list-style:none;margin:8px 0 0;padding:0}
+.hlist li{border-top:1px solid var(--line)}
+.hlist button{display:grid;grid-template-columns:1fr auto;gap:2px 10px;width:100%;background:none;border:0;text-align:left;padding:12px 2px;cursor:pointer;color:var(--ink)}
+.hlist .k{font-weight:700}
+.hlist .m{color:var(--muted);font-size:.88rem}
+.hlist .sc{grid-row:1/3;grid-column:2;align-self:center;text-align:right;font-family:var(--serif);font-weight:800;font-size:1.25rem;font-variant-numeric:tabular-nums}
+.hlist .sc small{display:block;font-family:var(--sans);font-size:.75rem;font-weight:700}
+.sc .ok{color:var(--ok)}.sc .bad{color:var(--bad)}
+.rev li.good .a{color:var(--ok)}
+.rev .mark{font-weight:700;margin-right:6px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -264,6 +282,7 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
       <button class="link hidden" id="abandonExam" style="justify-self:center"></button>
       <button class="btn btn-secondary" id="startTest">Test rapid de 30, cu răspunsul pe loc</button>
       <button class="btn btn-secondary" id="startWrong">Repetă greșelile</button>
+      <button class="btn btn-secondary" id="goHist">Istoric teste</button>
     </div>
     <h2>Grile pe capitole</h2>
     <div class="seg" role="group" aria-label="Mod">
@@ -301,10 +320,30 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
     <p class="hint" id="scoreText"></p>
     <div class="actions">
       <button class="btn btn-primary" id="again">Repetă greșelile din sesiune</button>
+      <button class="btn btn-secondary" id="histFromResult">Istoric teste</button>
       <button class="btn btn-secondary" id="home2">Înapoi la capitole</button>
     </div>
     <h2 id="revTitle">Unde ai greșit</h2>
     <ul class="rev" id="rev"></ul>
+    <div class="spacer"></div>
+  </div>
+</main>
+
+<main id="history" class="hidden">
+  <div class="qbar"><div class="qbar-in"><button class="back" id="histBack">‹ Acasă</button><span class="qmeta" id="histMeta"></span></div></div>
+  <div class="wrap">
+    <div id="histListView">
+      <h1 class="sheet-title">Istoric teste</h1>
+      <div id="histSum"></div>
+      <ul class="hlist" id="histList"></ul>
+    </div>
+    <div id="histDetail" class="hidden">
+      <h1 class="sheet-title" id="hdTitle"></h1>
+      <p class="hint" id="hdMeta"></p>
+      <div class="seg" role="group" aria-label="Filtru"><button id="hdWrong" aria-pressed="true">Doar greșelile</button><button id="hdAll" aria-pressed="false">Toate întrebările</button></div>
+      <ul class="rev" id="hdList"></ul>
+      <button class="btn btn-primary" id="hdRedo" style="margin-top:14px">Refă greșelile din testul ăsta</button>
+    </div>
     <div class="spacer"></div>
   </div>
 </main>
@@ -475,6 +514,7 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
       hh.innerHTML='Ultimele simulări: <b>'+last.map(function(x){return x[1]}).join(' · ')+'</b> din 30. Media: <b>'+avg.toFixed(1).replace('.',',')+'</b> (ținta pentru siguranță: 24).<br>'+rot}
     else hh.innerHTML=rot;
     hh.classList.remove('hidden');
+    var nh=(st._h||[]).length;$('goHist').textContent=nh?'Istoric teste ('+nh+')':'Istoric teste';
     var w=Q.filter(wrong).length;
     $('startWrong').textContent=w?'Repetă greșelile ('+w+')':'Nicio greșeală de repetat';
     $('startWrong').disabled=!w;
@@ -497,9 +537,9 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
   }
 
   var S=null;
-  function show(id){['home','quiz','result','sheets','sheet','tricks','calendar'].forEach(function(x){$(x).classList.toggle('hidden',x!==id)});window.scrollTo(0,0)}
+  function show(id){['home','quiz','result','sheets','sheet','tricks','calendar','history'].forEach(function(x){$(x).classList.toggle('hidden',x!==id)});window.scrollTo(0,0)}
   var EX=null;
-  function start(list,label,learn,from,exam){stopAudio();if(exam){stopTimer();EX=null}S={exam:!!exam,ans:exam?list.map(function(){return null}):null,list:list,i:0,label:label,score:0,missed:[],learn:!!learn,from:from||null};$('quit').textContent=from?'‹ Fișa':'‹ Acasă';$('home2').textContent=from?'Înapoi la fișă':'Înapoi acasă';$('quit').textContent=exam?'‹ Meniu':$('quit').textContent;show('quiz');if(exam){EX=S;S.prevT={};list.forEach(function(q){S.prevT[q.id]=st._t?st._t[q.id]:undefined});startTimer();persistEx()}renderQ()}
+  function start(list,label,learn,from,exam){stopAudio();if(exam){stopTimer();EX=null}S={exam:!!exam,ans:exam?list.map(function(){return null}):null,list:list,i:0,label:label,score:0,missed:[],learn:!!learn,from:from||null};$('quit').textContent=from?'‹ Fișa':'‹ Acasă';$('home2').textContent=from?'Înapoi la fișă':'Înapoi acasă';S.t0=Date.now();S.log=[];$('quit').textContent=exam?'‹ Meniu':$('quit').textContent;show('quiz');if(exam){EX=S;S.prevT={};list.forEach(function(q){S.prevT[q.id]=st._t?st._t[q.id]:undefined});startTimer();persistEx()}renderQ()}
   function seenT(q){return (st._t&&st._t[q.id])||(st[q.id]?1:0)}
   function freshPick(n){
     var arr=shuffle(Q.slice()).map(function(q,k){return {q:q,t:seenT(q),k:k}});
@@ -552,6 +592,7 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
     if(!ok)bs[j].classList.add('bad');
     var prev=st[q.id];st[q.id]=[ok?1:0,(prev?prev[1]:0)+1];save();
     if(ok)S.score++;else S.missed.push({q:q,y:j});
+    if(S.log)S.log.push([q.id,j]);
     var v=$('verdict');v.className='verdict '+(ok?'ok':'bad');
     v.textContent=ok?'Corect.':'Greșit. Răspunsul corect este '+'abc'[q.a]+').';
     $('next').textContent=S.i+1<S.list.length?'Următoarea întrebare':'Vezi rezultatul';
@@ -594,6 +635,7 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
     E.score=0;E.missed=[];
     E.list.forEach(function(q,k){var j=E.ans[k],ok=same(q,j);var prev=st[q.id];st[q.id]=[ok?1:0,(prev?prev[1]:0)+1];if(ok)E.score++;else E.missed.push({q:q,y:j})});
     if(!st._sim)st._sim=[];st._sim.push([Date.now(),E.score]);if(st._sim.length>50)st._sim=st._sim.slice(-50);
+    addHist({k:'Simulare',s:E.score,of:E.list.length,d:Math.round(((E.endedAt||Math.min(Date.now(),E.end))-(E.end-3600000))/1000),q:E.list.map(function(q,k){return [q.id,E.ans[k]]})});
     EX=null;persistEx();
   }
   function openCount(E){var n=0;E.ans.forEach(function(x){if(x===null)n++});return n}
@@ -632,6 +674,7 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
     if(S.exam){
       stopTimer();$('qmeta').classList.remove('warn');S.endedAt=Date.now();scoreEx(S);
     }
+    if(!S.exam&&!S.learn&&S.log&&S.log.length===S.list.length){var nm=S.label;if(S.from){var arr=S.from[0]==='g'?G:T;nm='Fișa: '+arr[S.from[1]].t}addHist({k:nm,s:S.score,of:S.list.length,d:Math.round((Date.now()-S.t0)/1000),q:S.log.slice()})}
     show('result');
     var bd=$('examBadge');bd.classList.toggle('hidden',!S.exam);
     if(S.exam){var pass=S.score>=20;bd.className='badge '+(pass?'ok':'bad');bd.textContent=pass?'ADMIS':'RESPINS'}
@@ -844,6 +887,77 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
   $('calFromTricks').onclick=function(){view.calFrom='tricks';openCal()};
   $('calLink').onclick=function(){view.calFrom='tables';openCal()};
   $('calBack').onclick=function(){if(view.calFrom==='tables'){view.calFrom=null;openList('t')}else if(view.calFrom==='tricks'){view.calFrom=null;show('tricks')}else{renderHome();show('home')}};
+
+  function addHist(e){e.t=Date.now();if(!st._h)st._h=[];st._h.push(e);if(st._h.length>100)st._h=st._h.slice(-100);save()}
+  var LSH=['ian','feb','mar','apr','mai','iun','iul','aug','sep','oct','nov','dec'];
+  function when(t){var d=new Date(t),m=d.getMinutes();return d.getDate()+' '+LSH[d.getMonth()]+', '+d.getHours()+':'+(m<10?'0':'')+m}
+  function dur(s){if(s<60)return s+' s';var m=Math.round(s/60);return m+' min'}
+  function kindName(k){return k==='Test'?'Test rapid':k==='Greșeli'?'Repetă greșelile':k}
+  var hFrom='home',hCur=null;
+  function openHist(from){stopAudio();hFrom=from||'home';$('histBack').textContent=hFrom==='result'?'‹ Rezultat':'‹ Acasă';renderHistList();show('history')}
+  function renderHistList(){
+    $('histListView').classList.remove('hidden');$('histDetail').classList.add('hidden');
+    var H=st._h||[];$('histMeta').textContent=H.length?H.length+(H.length===1?' test':(H.length>=20?' de teste':' teste')):'';
+    var sum=$('histSum'),ul=$('histList');sum.innerHTML='';ul.innerHTML='';
+    if(!H.length){sum.innerHTML='<p class="hint">Încă nu ai niciun test terminat. După fiecare simulare sau test, rezultatul apare aici.</p>';return}
+    var sims=H.filter(function(e){return e.k==='Simulare'});
+    var oth=H.filter(function(e){return e.k!=='Simulare'});
+    var last5=sims.slice(-5),avg=last5.length?last5.reduce(function(a,e){return a+e.s},0)/last5.length:null;
+    var pass=sims.filter(function(e){return e.s>=20}).length;
+    var pct=oth.length?Math.round(oth.reduce(function(a,e){return a+e.s},0)*100/oth.reduce(function(a,e){return a+e.of},0)):null;
+    var g=document.createElement('div');g.className='hsum';
+    g.innerHTML='<div><b>'+(avg===null?'–':avg.toFixed(1).replace('.',','))+'</b><span>media ultimelor '+(last5.length||'')+' simulări (ținta: 24)</span></div><div><b>'+(sims.length?pass+' / '+sims.length:'–')+'</b><span>simulări cu ADMIS</span></div><div><b>'+oth.length+'</b><span>alte teste terminate</span></div><div><b>'+(pct===null?'–':pct+'%')+'</b><span>răspunsuri corecte la celelalte teste</span></div>';
+    sum.appendChild(g);
+    if(sims.length>1){
+      var sp=document.createElement('div');sp.className='spark';sp.setAttribute('aria-label','Scorurile simulărilor, în ordine');
+      sims.slice(-15).forEach(function(e){var i=document.createElement('i');i.style.height=(e.s/30*100)+'%';if(e.s>=20)i.className='ok';i.title=e.s+' din 30';sp.appendChild(i)});
+      var th=document.createElement('span');th.className='thr';th.style.bottom=(20/30*100)+'%';sp.appendChild(th);
+      var cap=document.createElement('p');cap.className='hint';cap.style.margin='4px 0 0';cap.textContent='Ultimele simulări, de la stânga la dreapta. Linia punctată e pragul de 20.';
+      sum.appendChild(sp);sum.appendChild(cap);
+    }
+    H.slice().reverse().forEach(function(e,ri){
+      var idx=H.length-1-ri,li=document.createElement('li'),b=document.createElement('button');
+      var isSim=e.k==='Simulare',ok=e.s>=20;
+      b.innerHTML='<span class="k"></span><span class="m"></span><span class="sc"></span>';
+      b.querySelector('.k').textContent=kindName(e.k);
+      b.querySelector('.m').textContent=when(e.t)+' · '+dur(e.d);
+      var sc=b.querySelector('.sc');sc.textContent=e.s+'/'+e.of;
+      if(isSim){var s=document.createElement('small');s.className=ok?'ok':'bad';s.textContent=ok?'ADMIS':'RESPINS';sc.appendChild(s)}
+      b.onclick=function(){openHistDetail(idx)};
+      li.appendChild(b);ul.appendChild(li);
+    });
+  }
+  var hdOnlyWrong=true;
+  function openHistDetail(i){
+    hCur=i;var e=st._h[i];
+    $('histListView').classList.add('hidden');$('histDetail').classList.remove('hidden');window.scrollTo(0,0);
+    $('hdTitle').textContent=kindName(e.k)+': '+e.s+' din '+e.of+(e.k==='Simulare'?(e.s>=20?' · ADMIS':' · RESPINS'):'');
+    $('hdMeta').textContent=when(e.t)+' · durată '+dur(e.d)+' · greșite: '+(e.of-e.s);
+    renderHd();
+  }
+  function renderHd(){
+    var e=st._h[hCur],ul=$('hdList');ul.innerHTML='';
+    $('hdWrong').setAttribute('aria-pressed',hdOnlyWrong);$('hdAll').setAttribute('aria-pressed',!hdOnlyWrong);
+    var nWrong=0;
+    e.q.forEach(function(x){
+      var q=Q[x[0]];if(!q)return;var j=x[1],ok=same(q,j);if(!ok)nWrong++;
+      if(hdOnlyWrong&&ok)return;
+      var li=document.createElement('li');if(ok)li.className='good';
+      li.innerHTML='<p class="q"><span class="mark"></span><span></span></p>'+(ok?'':'<p class="y"></p>')+'<p class="a"></p>';
+      li.querySelector('.mark').textContent=ok?'✓':'✗';li.querySelector('.q span:last-child').textContent=q.q;
+      if(!ok)li.querySelector('.y').textContent=j===null||j===undefined?'Nu ai răspuns':'Ai ales: '+'abc'[j]+') '+q.o[j];
+      li.querySelector('.a').textContent=(ok?'Ai ales corect: ':'Corect: ')+'abc'[q.a]+') '+q.o[q.a];
+      ul.appendChild(li);
+    });
+    if(hdOnlyWrong&&!nWrong){var li=document.createElement('li');li.textContent='Toate răspunsurile au fost corecte.';ul.appendChild(li)}
+    $('hdRedo').classList.toggle('hidden',!nWrong);
+  }
+  $('hdWrong').onclick=function(){hdOnlyWrong=true;renderHd()};
+  $('hdAll').onclick=function(){hdOnlyWrong=false;renderHd()};
+  $('hdRedo').onclick=function(){var e=st._h[hCur];var qs=e.q.filter(function(x){var q=Q[x[0]];return q&&!same(q,x[1])}).map(function(x){return Q[x[0]]});start(shuffle(qs),'Greșeli')};
+  $('histBack').onclick=function(){if(!$('histDetail').classList.contains('hidden')){renderHistList();window.scrollTo(0,0);return}if(hFrom==='result')show('result');else{renderHome();show('home')}};
+  $('goHist').onclick=function(){openHist('home')};
+  $('histFromResult').onclick=function(){openHist('result')};
   $('goSheets').onclick=function(){openList('g')};
   $('goTables').onclick=function(){openList('t')};
   $('sheetsBack').onclick=function(){renderHome();show('home')};
