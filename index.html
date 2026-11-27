@@ -547,7 +547,7 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
     var p0=st._p||0;$('listenAll').textContent=p0?'Continuă ascultarea':'Ascultă toată materia';
     $('listenAllHint').textContent=(p0?'Ai rămas la întrebarea '+(p0+1)+' din '+Q.length+'.':'Toate cele '+Q.length+' de întrebări, fișă după fișă, fără pauză între ele.')+' Ecranul rămâne aprins cât timp citește.';
     var unseen=Q.filter(function(q){return !seenT(q)}).length;
-    var rot=unseen?'Neparcurse încă la teste: <b>'+unseen+'</b> din '+Q.length+'. Testele le iau întâi pe acestea, la întâmplare, apoi pe cele parcurse cel mai demult.':'Ai văzut toate întrebările. Testele aduc acum întâi întrebările văzute cel mai demult.';
+    var rot=unseen?'Neparcurse încă la teste: <b>'+unseen+'</b> din '+Q.length+'. Testele aleg mai întâi dintre acestea, la întâmplare, apoi dintre cele parcurse cel mai demult.':'Ai văzut toate întrebările. Testele aleg acum mai întâi dintre întrebările văzute cel mai demult.';
     var ab=$('abandonExam');ab.classList.remove('arm');
     if(EX){var rr=Math.max(0,Math.round((EX.end-Date.now())/1000));$('startExam').textContent='Continuă simularea · mai ai '+fmt(rr);ab.textContent='Renunță la simularea începută';ab.classList.remove('hidden')}
     else{$('startExam').textContent='Simulare examen: 30 de întrebări, 60 de minute';ab.classList.add('hidden')}
