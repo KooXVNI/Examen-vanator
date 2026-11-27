@@ -234,6 +234,9 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
 .sc .ok{color:var(--ok)}.sc .bad{color:var(--bad)}
 .rev li.good .a{color:var(--ok)}
 .rev .mark{font-weight:700;margin-right:6px}
+.report{display:inline-block;color:var(--muted);font-size:.88rem;text-decoration:underline;margin:14px 0 0;padding:6px 0}
+.reportbox{color:var(--muted);font-size:.9rem;text-align:center;margin:6px 0 0}
+.reportbox a{color:var(--ink)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -293,6 +296,7 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
     <p class="hint" id="modeHint"></p>
     <ul class="chapters" id="chapters"></ul>
     </div>
+    <p class="reportbox">Ai găsit o greșeală sau ai o idee? <a id="reportGen" href="mailto:kooxvni@gmail.com">Semnalează o problemă</a><br>kooxvni@gmail.com</p>
     <div class="foot"><button class="link" id="reset">Șterge progresul</button></div>
   </div>
 </main>
@@ -309,6 +313,7 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
     <button class="imgtoggle hidden" id="imgToggle"></button>
     <div class="opts" id="opts"></div>
     <p class="verdict" id="verdict" aria-live="polite"></p>
+    <a class="report" id="reportQ" href="mailto:kooxvni@gmail.com">Semnalează o problemă la întrebarea asta</a>
     <div class="spacer"></div>
   </div>
   <div class="next hidden" id="nextWrap"><div class="nextrow"><button class="btn btn-secondary hidden" id="prevQ" aria-label="Întrebarea anterioară">‹ Înapoi</button><button class="btn btn-primary" id="next">Următoarea întrebare</button><button class="btn btn-primary hidden" id="examSubmit">Predă testul</button></div></div>
@@ -454,6 +459,7 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
     <div class="tools"><button class="btn btn-primary" id="listen">Ascultă</button><button class="btn btn-secondary" id="testSheet">Testează-mă</button></div>
     <p class="voice-note hidden" id="voiceNote"></p>
     <ul class="items" id="items"></ul>
+    <p class="reportbox" style="text-align:left">Ceva greșit în fișa asta? <a id="reportSheet" href="mailto:kooxvni@gmail.com">Semnalează o problemă</a> (kooxvni@gmail.com)</p>
     <div class="done-wrap"><button class="btn btn-secondary" id="sheetDone">Am citit</button></div>
     <div class="spacer"></div>
   </div>
@@ -557,6 +563,7 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
     if(S.exam){tick();$('qprog').style.width=(S.ans.filter(function(x){return x!==null}).length*100/S.list.length)+'%'}
     else{$('qmeta').textContent=(S.i+1)+' / '+S.list.length;$('qprog').style.width=(S.i*100/S.list.length)+'%'}
     $('qchap').textContent=q.c;
+    $('reportQ').href=reportQHref(q,S.exam);
     $('qtext').textContent=q.q;
     var im=$('qimgs');im.innerHTML='';
     if(q.i){q.i.forEach(function(k,j){
@@ -749,7 +756,7 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
     view.mode=mode;view.idx=i;show('sheet');
     var arr=mode==='g'?G:T,g=arr[i];
     curItems=mode==='g'?g.ids.map(function(id){return {q:Q[id],text:Q[id].q}}):g.rows.map(function(r){return {q:Q[r[0]],text:r[1],table:true}});
-    $('sheetTitle').textContent=g.t;$('sheetMeta').textContent=(i+1)+' / '+arr.length;
+    $('sheetTitle').textContent=g.t;$('reportSheet').href=mailto('Examen de vânător – problemă în fișa „'+g.t+'”','Fișa: '+g.t+'\n\nCe problemă ai observat (scrie și întrebarea)?\n');$('sheetMeta').textContent=(i+1)+' / '+arr.length;
     $('voiceNote').classList.add('hidden');
     var ul=$('items');ul.innerHTML='';
     curItems.forEach(function(it,k){
@@ -982,6 +989,16 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
   $('histBack').onclick=function(){if(!$('histDetail').classList.contains('hidden')){renderHistList();window.scrollTo(0,0);return}if(hFrom==='result')show('result');else{renderHome();show('home')}};
   $('goHist').onclick=function(){openHist('home')};
   $('histFromResult').onclick=function(){openHist('result')};
+
+  var MAIL='kooxvni@gmail.com';
+  function mailto(subj,body){return 'mailto:'+MAIL+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body)}
+  function reportQHref(q,hideAns){
+    var b='Întrebarea nr. '+(q.id+1)+' ('+q.c+'):\n'+q.q+'\n\n'+q.o.map(function(o,j){return 'abc'[j]+') '+o}).join('\n');
+    if(!hideAns)b+='\n\nRăspunsul marcat corect în aplicație: '+'abc'[q.a]+')';
+    b+='\n\nCe problemă ai observat?\n';
+    return mailto('Examen de vânător – problemă la întrebarea nr. '+(q.id+1),b);
+  }
+  $('reportGen').href=mailto('Examen de vânător – problemă sau sugestie','Scrie aici ce ai observat:\n');
   $('goSheets').onclick=function(){openList('g')};
   $('goTables').onclick=function(){openList('t')};
   $('sheetsBack').onclick=function(){renderHome();show('home')};
