@@ -585,7 +585,8 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
   function start(list,label,learn,from,exam){stopAudio();if(exam){stopTimer();EX=null}S={exam:!!exam,ans:exam?list.map(function(){return null}):null,list:list,i:0,label:label,score:0,missed:[],learn:!!learn,from:from||null};$('quit').textContent=from?'‹ Fișa':'‹ Acasă';$('home2').textContent=from?'Înapoi la fișă':'Înapoi acasă';S.t0=Date.now();S.log=[];$('quit').textContent=exam?'‹ Meniu':$('quit').textContent;show('quiz');if(exam){EX=S;S.prevT={};list.forEach(function(q){S.prevT[q.id]=st._t?st._t[q.id]:undefined});startTimer();persistEx()}renderQ()}
   function seenT(q){if(st._wt&&st._wt[q.id])return 0;return (st._t&&st._t[q.id])||(st[q.id]?1:0)}
   if(!st._wt){st._wt={};Q.forEach(function(q){if(wrong(q))st._wt[q.id]=1});save()}
-  function markWT(q,ok){if(ok)delete st._wt[q.id];else if(!st._wt[q.id])st._wt[q.id]=Date.now()}
+  if(!st._rt){st._rt={};(st._h||[]).slice().sort(function(a,b){return a.t-b.t}).forEach(function(e){(e.q||[]).forEach(function(x){var q=Q[x[0]];if(q)st._rt[q.id]=same(q,x[1])?1:0})});save()}
+  function markWT(q,ok){st._rt[q.id]=ok?1:0;if(ok)delete st._wt[q.id];else if(!st._wt[q.id])st._wt[q.id]=Date.now()}
   function wtList(){return Object.keys(st._wt).map(Number).filter(function(id){return Q[id]}).sort(function(a,b){return st._wt[a]-st._wt[b]})}
   function freshPick(n){
     var arr=shuffle(Q.slice()).map(function(q,k){return {q:q,t:seenT(q),k:k}});
@@ -754,7 +755,7 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
     stopTimer();if(EX)cancelEx(EX);renderHome()};
   $('startTest').onclick=function(){start(freshPick(30),'Test')};
   $('startWrong').onclick=function(){start(shuffle(Q.filter(wrong)).slice(0,30),'Greșeli')};
-  $('reset').onclick=function(){if(!this.dataset.arm){this.dataset.arm=1;this.textContent='Sigur? Apasă din nou ca să ștergi tot progresul.';return}st={_r:{},_s:{},_wt:{}};EX=null;stopTimer();save();delete this.dataset.arm;this.textContent='Șterge progresul';renderHome()};
+  $('reset').onclick=function(){if(!this.dataset.arm){this.dataset.arm=1;this.textContent='Sigur? Apasă din nou ca să ștergi tot progresul.';return}st={_r:{},_s:{},_wt:{},_rt:{}};EX=null;stopTimer();save();delete this.dataset.arm;this.textContent='Șterge progresul';renderHome()};
 
   var G=D.g,T=D.t;
   if(!st._s)st._s={};
@@ -1069,7 +1070,7 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
   $('searchBack').onclick=function(){renderHome();show('home')};
 
   function weakRow(ul,name,qs,onGo){
-    var ans=qs.filter(function(q){return st[q.id]}),ok=ans.filter(known).length,n=ans.length;
+    var ans=qs.filter(function(q){return st._rt[q.id]!==undefined}),ok=ans.filter(function(q){return st._rt[q.id]===1}).length,n=ans.length;
     var li=document.createElement('li'),few=n<5;if(few)li.className='few';
     var pct=n?Math.round(ok*100/n):0,cls=pct<60?'lo':pct<80?'mid':'hi';
     li.innerHTML='<span class="wn"></span><span class="wp"></span><span class="wm"><span class="bar"><i></i></span><small></small><button>Exersează</button></span>';
@@ -1090,7 +1091,7 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
     rows.sort(function(a,b){return a.key-b.key});
     var ul=$('weakChap');ul.innerHTML='';rows.forEach(function(r){ul.appendChild(r.li)});
     var tried=rows.filter(function(r){return r.key<200}).length;
-    $('weakHint').textContent=tried?'Capitolele sunt ordonate de la cel mai slab la cel mai bun, după cât la sută ai răspuns corect (contează ultimul răspuns la fiecare întrebare). Bara arată cât din capitol ai încercat.':'Fă câteva teste și aici apare clasamentul capitolelor, de la cel mai slab la cel mai bun.';
+    $('weakHint').textContent=tried?'Capitolele sunt ordonate de la cel mai slab la cel mai bun, după răspunsurile tale din simulări și teste rapide (contează ultimul răspuns la fiecare întrebare). Exersarea și repetarea greșelilor nu schimbă clasamentul. Bara arată cât din capitol ai întâlnit la teste.':'Fă câteva simulări sau teste rapide și aici apare clasamentul capitolelor, de la cel mai slab la cel mai bun.';
     var sr=[];G.forEach(function(g,gi){if(g.k==='Prioritate')return;var qs=g.ids.map(function(id){return Q[id]});var r=weakRow(null,g.t,qs,function(){start(shuffle(qs.slice()),'Fișă',false,['g',gi])});if(r.n>=4)sr.push(r)});
     sr.sort(function(a,b){return a.key-b.key});sr=sr.filter(function(r){return r.key<80}).slice(0,5);
     var ul2=$('weakSheets');ul2.innerHTML='';sr.forEach(function(r){ul2.appendChild(r.li)});
