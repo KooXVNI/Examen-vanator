@@ -237,6 +237,25 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
 .report{display:inline-block;color:var(--muted);font-size:.88rem;text-decoration:underline;margin:14px 0 0;padding:6px 0}
 .reportbox{color:var(--muted);font-size:.9rem;text-align:center;margin:6px 0 0}
 .reportbox a{color:var(--ink)}
+.weak{list-style:none;margin:8px 0 0;padding:0;counter-reset:w}
+.weak li{border-top:1px solid var(--line);padding:11px 0;display:grid;grid-template-columns:28px 1fr auto;gap:3px 10px;align-items:center;counter-increment:w}
+.weak li::before{content:counter(w);grid-row:1/3;font-family:var(--serif);font-weight:800;font-size:1.1rem;color:var(--muted);text-align:center}
+.weak .wn{font-weight:600;line-height:1.3}
+.weak .wp{font-family:var(--serif);font-weight:800;font-variant-numeric:tabular-nums;text-align:right}
+.weak .wp.lo{color:var(--bad)}.weak .wp.mid{color:var(--blaze)}.weak .wp.hi{color:var(--ok)}
+.weak .wm{grid-column:2/4;display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.86rem}
+.weak .wm .bar{flex:1;margin:0}
+.weak button{background:none;border:1.5px solid var(--line);border-radius:9px;padding:5px 10px;font-weight:600;cursor:pointer;color:var(--ink);white-space:nowrap}
+.weak li.few .wp{color:var(--muted);font-size:.85rem;font-family:var(--sans);font-weight:600}
+.searchbox{position:sticky;top:calc(env(safe-area-inset-top,0px) + 52px);z-index:4;background:var(--bg);padding:10px 0}
+.searchbox input{width:100%;font:inherit;font-size:16px;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink)}
+.sres{list-style:none;margin:0;padding:0}
+.sres li{border-top:1px solid var(--line);padding:12px 2px}
+.sres .q{font-weight:600;margin:0 0 4px}
+.sres .o{margin:2px 0;color:var(--muted);font-size:.95rem}
+.sres .o.ok{color:var(--ok);font-weight:700}
+.sres .c{color:var(--muted);font-size:.8rem;margin:0 0 4px}
+.sres mark{background:color-mix(in srgb,var(--blaze) 30%,transparent);color:inherit;border-radius:3px;padding:0 1px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -266,12 +285,18 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
     <h2>Planul tău</h2>
     <div class="today" id="today"></div>
     <ol class="steps" id="steps"></ol>
+    <h2>Unde stai slab</h2>
+    <p class="hint" id="weakHint"></p>
+    <ol class="weak" id="weakChap"></ol>
+    <h2 id="weakSheetsH">Fișele cu cele mai multe greșeli</h2>
+    <ol class="weak" id="weakSheets"></ol>
     </div>
     <div id="tabMain">
     <h2>Învață rapid</h2>
     <div class="cards">
       <button class="card" id="goSheets"><i></i><b>Fișe</b><span>Pe specii și pe capitole, cu răspunsul direct. Le poți și asculta.</span></button>
       <button class="card" id="goTables"><i></i><b>Tabele</b><span>Perioade de vânătoare, împerechere, gestație, coarne.</span></button>
+      <button class="card wide" id="goSearch"><i></i><b>Caută o întrebare</b><span>Scrii un cuvânt și găsești întrebarea, cu răspunsul corect. Merge și fără diacritice.</span></button>
       <button class="card wide" id="goCal"><i></i><b>Calendarul vânătorii</b><span>Toate perioadele pe o linie a timpului, pe grupe de specii, în ordinea în care se deschid.</span></button>
       <button class="card wide" id="goTricks"><i></i><b>Trucuri</b><span>Capcanele care nu sunt niciodată corecte și regulile care rezolvă zeci de întrebări deodată.</span></button>
     </div>
@@ -331,6 +356,16 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
     </div>
     <h2 id="revTitle">Unde ai greșit</h2>
     <ul class="rev" id="rev"></ul>
+    <div class="spacer"></div>
+  </div>
+</main>
+
+<main id="search" class="hidden">
+  <div class="qbar"><div class="qbar-in"><button class="back" id="searchBack">‹ Acasă</button><span class="qmeta" id="searchMeta"></span></div></div>
+  <div class="wrap">
+    <div class="searchbox"><input type="search" id="searchIn" placeholder="De exemplu: prepelicari, boncănit, 250 ha" autocomplete="off" enterkeyhint="search" aria-label="Caută în întrebări"></div>
+    <p class="hint" id="searchHint">Caută în toate cele 993 de întrebări și în variantele de răspuns. Răspunsul corect e marcat cu verde.</p>
+    <ul class="sres" id="searchRes"></ul>
     <div class="spacer"></div>
   </div>
 </main>
@@ -504,7 +539,7 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
   function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
 
   function renderHome(){
-    renderWhen();renderPlan();setTab(st._tab==='plan'?'plan':'main');
+    renderWhen();renderPlan();renderWeak();setTab(st._tab==='plan'?'plan':'main');
     var k=Q.filter(known).length;
     $('known').textContent=k;$('total').textContent=Q.length;
     var p=Math.round(k*100/Q.length);$('pct').textContent=p+'%';
@@ -545,7 +580,7 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
   }
 
   var S=null;
-  function show(id){['home','quiz','result','sheets','sheet','tricks','calendar','history'].forEach(function(x){$(x).classList.toggle('hidden',x!==id)});window.scrollTo(0,0)}
+  function show(id){['home','quiz','result','sheets','sheet','tricks','calendar','history','search'].forEach(function(x){$(x).classList.toggle('hidden',x!==id)});window.scrollTo(0,0)}
   var EX=null;
   function start(list,label,learn,from,exam){stopAudio();if(exam){stopTimer();EX=null}S={exam:!!exam,ans:exam?list.map(function(){return null}):null,list:list,i:0,label:label,score:0,missed:[],learn:!!learn,from:from||null};$('quit').textContent=from?'‹ Fișa':'‹ Acasă';$('home2').textContent=from?'Înapoi la fișă':'Înapoi acasă';S.t0=Date.now();S.log=[];$('quit').textContent=exam?'‹ Meniu':$('quit').textContent;show('quiz');if(exam){EX=S;S.prevT={};list.forEach(function(q){S.prevT[q.id]=st._t?st._t[q.id]:undefined});startTimer();persistEx()}renderQ()}
   function seenT(q){if(st._wt&&st._wt[q.id])return 0;return (st._t&&st._t[q.id])||(st[q.id]?1:0)}
@@ -999,6 +1034,68 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
     return mailto('Examen de vânător – problemă la întrebarea nr. '+(q.id+1),b);
   }
   $('reportGen').href=mailto('Examen de vânător – problemă sau sugestie','Scrie aici ce ai observat:\n');
+
+  function fold(x){return x.toLowerCase().replace(/[șş]/g,'s').replace(/[țţ]/g,'t').normalize('NFD').replace(/[̀-ͯ]/g,'')}
+  var SIDX=null;
+  function esc(x){return x.replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function hl(text,terms){
+    var f=fold(text),marks=[];
+    terms.forEach(function(t){var i=0;while((i=f.indexOf(t,i))>=0){marks.push([i,i+t.length]);i+=t.length}});
+    if(!marks.length)return esc(text);
+    marks.sort(function(a,b){return a[0]-b[0]});var out='',pos=0;
+    marks.forEach(function(m){if(m[0]<pos)return;out+=esc(text.slice(pos,m[0]))+'<mark>'+esc(text.slice(m[0],m[1]))+'</mark>';pos=m[1]});
+    return out+esc(text.slice(pos));
+  }
+  function doSearch(){
+    if(!SIDX)SIDX=Q.map(function(q){return fold(q.q+' '+q.o.join(' '))});
+    var raw=$('searchIn').value.trim(),ul=$('searchRes');ul.innerHTML='';
+    var terms=fold(raw).split(/\s+/).filter(function(t){return t.length>=2});
+    if(!terms.length){$('searchMeta').textContent='';$('searchHint').classList.remove('hidden');return}
+    $('searchHint').classList.add('hidden');
+    var hits=[];for(var i=0;i<Q.length;i++){var s=SIDX[i];if(terms.every(function(t){return s.indexOf(t)>=0}))hits.push(Q[i])}
+    $('searchMeta').textContent=hits.length===1?'1 rezultat':hits.length+(hits.length>=20?' de rezultate':' rezultate');
+    if(!hits.length){var li=document.createElement('li');li.textContent='Nicio întrebare nu conține „'+raw+'”. Încearcă un alt cuvânt sau doar o parte din el.';ul.appendChild(li);return}
+    hits.slice(0,60).forEach(function(q){
+      var li=document.createElement('li');
+      var o=q.o.map(function(x,j){return '<p class="o'+(same(q,j)?' ok':'')+'">'+'abc'[j]+') '+hl(x,terms)+(same(q,j)?' ✓':'')+'</p>'}).join('');
+      li.innerHTML='<p class="c">'+esc(q.c)+'</p><p class="q">'+hl(q.q,terms)+'</p>'+o;
+      if(q.i){var th=document.createElement('div');th.className='thumbs';q.i.forEach(function(m,j){var f=document.createElement('figure');var im=document.createElement('img');im.src=M[m];im.alt='Imaginea '+'ABC'[j];f.appendChild(im);if(q.i.length>1){var c=document.createElement('figcaption');c.textContent='ABC'[j];f.appendChild(c)}th.appendChild(f)});li.insertBefore(th,li.querySelector('.o'))}
+      ul.appendChild(li);
+    });
+    if(hits.length>60){var li=document.createElement('li');li.className='hint';li.textContent='Se văd primele 60. Adaugă încă un cuvânt ca să restrângi căutarea.';ul.appendChild(li)}
+  }
+  var sT=null;$('searchIn').addEventListener('input',function(){clearTimeout(sT);sT=setTimeout(doSearch,150)});
+  $('goSearch').onclick=function(){stopAudio();show('search');setTimeout(function(){$('searchIn').focus()},50)};
+  $('searchBack').onclick=function(){renderHome();show('home')};
+
+  function weakRow(ul,name,qs,onGo){
+    var ans=qs.filter(function(q){return st[q.id]}),ok=ans.filter(known).length,n=ans.length;
+    var li=document.createElement('li'),few=n<5;if(few)li.className='few';
+    var pct=n?Math.round(ok*100/n):0,cls=pct<60?'lo':pct<80?'mid':'hi';
+    li.innerHTML='<span class="wn"></span><span class="wp"></span><span class="wm"><span class="bar"><i></i></span><small></small><button>Exersează</button></span>';
+    li.querySelector('.wn').textContent=name;
+    var wp=li.querySelector('.wp');
+    if(few){wp.textContent=n?'prea puțin':'neîncercat'}else{wp.textContent=pct+'%';wp.classList.add(cls)}
+    li.querySelector('.bar i').style.width=(qs.length?n*100/qs.length:0)+'%';
+    li.querySelector('small').textContent=(n?(ok===1?'1 corectă':ok+(ok>=20?' de corecte':' corecte'))+' din '+n+(n===1?' încercată':' încercate')+' · ':'')+qs.length+' întrebări';
+    li.querySelector('button').onclick=onGo;
+    return {li:li,key:few?200+(n?0:1):pct,n:n};
+  }
+  function practice(qs,label){
+    var pool=shuffle(qs.filter(wrong)).concat(shuffle(qs.filter(function(q){return !st[q.id]})),shuffle(qs.filter(known)));
+    start(pool.slice(0,20),label);
+  }
+  function renderWeak(){
+    var rows=chapters.map(function(c){var qs=Q.filter(function(q){return q.c===c});return weakRow(null,c,qs,function(){practice(qs,c)})});
+    rows.sort(function(a,b){return a.key-b.key});
+    var ul=$('weakChap');ul.innerHTML='';rows.forEach(function(r){ul.appendChild(r.li)});
+    var tried=rows.filter(function(r){return r.key<200}).length;
+    $('weakHint').textContent=tried?'Capitolele sunt ordonate de la cel mai slab la cel mai bun, după cât la sută ai răspuns corect (contează ultimul răspuns la fiecare întrebare). Bara arată cât din capitol ai încercat.':'Fă câteva teste și aici apare clasamentul capitolelor, de la cel mai slab la cel mai bun.';
+    var sr=[];G.forEach(function(g,gi){if(g.k==='Prioritate')return;var qs=g.ids.map(function(id){return Q[id]});var r=weakRow(null,g.t,qs,function(){start(shuffle(qs.slice()),'Fișă',false,['g',gi])});if(r.n>=4)sr.push(r)});
+    sr.sort(function(a,b){return a.key-b.key});sr=sr.filter(function(r){return r.key<80}).slice(0,5);
+    var ul2=$('weakSheets');ul2.innerHTML='';sr.forEach(function(r){ul2.appendChild(r.li)});
+    $('weakSheetsH').classList.toggle('hidden',!sr.length);
+  }
   $('goSheets').onclick=function(){openList('g')};
   $('goTables').onclick=function(){openList('t')};
   $('sheetsBack').onclick=function(){renderHome();show('home')};

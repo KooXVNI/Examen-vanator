@@ -17,6 +17,8 @@ Nu ai nevoie de cont și nu plătești nimic. După prima deschidere, aplicația
 - **Poze alb-negru** (Buton comutare).
 - **Simulare de examen:** 30 de întrebări, 60 de minute, cu rezultat ADMIS sau RESPINS (pragul e 20 din 30).
 - **Teste rapide**, cu răspunsul afișat pe loc. Întrebările nu se repetă până nu le vezi pe toate.
+- **Căutare** în toate întrebările, cu răspunsul corect marcat (merge și fără diacritice).
+- **Unde stai slab:** capitolele ordonate de la cel mai slab la cel mai bun, cu exersare directă.
 - **Repetă greșelile** și **istoricul testelor**, cu revizuirea fiecărui test.
 
 ## Cum o instalezi
