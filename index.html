@@ -592,12 +592,13 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
   function wtList(){return Object.keys(st._wt).map(Number).filter(function(id){return Q[id]}).sort(function(a,b){return st._wt[a]-st._wt[b]})}
   var PER=/perioad\w* (de vânătoare|admisă pentru vânarea)|este permisă în perioada|se vânează în perioada/i;
   function isPer(q){return PER.test(q.q)}
-  function freshPick(n,cap){
-    var out=[],np=0;
-    function fill(list){for(var i=0;i<list.length&&out.length<n;i++){var q=list[i],p=isPer(q);if(cap!=null&&p&&np>=cap)continue;out.push(q);if(p)np++}}
-    fill(shuffle(Q.filter(function(q){return !seenT(q)})));
-    if(out.length<n){newRound();var inO={};out.forEach(function(q){inO[q.id]=1;st._carry[q.id]=1});save();fill(shuffle(Q.filter(function(q){return !inO[q.id]})))}
-    return shuffle(out);
+  function freshPick(n,per){
+    var pool=function(q){return per==null||!isPer(q)},m=n,P=[];
+    if(per!=null){P=shuffle(Q.filter(isPer)).map(function(q,k){return {q:q,t:seenT(q),k:k}}).sort(function(a,b){return a.t-b.t||a.k-b.k}).slice(0,per).map(function(x){return x.q});m=n-P.length}
+    var out=shuffle(Q.filter(function(q){return pool(q)&&!seenT(q)})).slice(0,m);
+    if(out.length<m){var keep=out.concat(P.filter(function(q){return !seenT(q)}));newRound();var inO={};keep.forEach(function(q){inO[q.id]=1;st._carry[q.id]=1});save();
+      out=out.concat(shuffle(Q.filter(function(q){return pool(q)&&!inO[q.id]&&P.indexOf(q)<0})).slice(0,m-out.length))}
+    return shuffle(P.concat(out));
   }
   function renderQ(){
     var q=S.list[S.i];
