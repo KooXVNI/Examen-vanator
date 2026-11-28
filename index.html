@@ -590,11 +590,14 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
   if(!st._rt){st._rt={};(st._h||[]).slice().sort(function(a,b){return a.t-b.t}).forEach(function(e){(e.q||[]).forEach(function(x){var q=Q[x[0]];if(q)st._rt[q.id]=same(q,x[1])?1:0})});save()}
   function markWT(q,ok){st._rt[q.id]=ok?1:0;if(ok)delete st._wt[q.id];else if(!st._wt[q.id])st._wt[q.id]=Date.now()}
   function wtList(){return Object.keys(st._wt).map(Number).filter(function(id){return Q[id]}).sort(function(a,b){return st._wt[a]-st._wt[b]})}
-  function freshPick(n){
-    var U=shuffle(Q.filter(function(q){return !seenT(q)}));
-    if(U.length>=n)return U.slice(0,n);
-    newRound();var inU={};U.forEach(function(q){inU[q.id]=1;st._carry[q.id]=1});save();
-    return shuffle(U.concat(shuffle(Q.filter(function(q){return !inU[q.id]})).slice(0,n-U.length)));
+  var PER=/perioad\w* (de vânătoare|admisă pentru vânarea)|este permisă în perioada|se vânează în perioada/i;
+  function isPer(q){return PER.test(q.q)}
+  function freshPick(n,cap){
+    var out=[],np=0;
+    function fill(list){for(var i=0;i<list.length&&out.length<n;i++){var q=list[i],p=isPer(q);if(cap!=null&&p&&np>=cap)continue;out.push(q);if(p)np++}}
+    fill(shuffle(Q.filter(function(q){return !seenT(q)})));
+    if(out.length<n){newRound();var inO={};out.forEach(function(q){inO[q.id]=1;st._carry[q.id]=1});save();fill(shuffle(Q.filter(function(q){return !inO[q.id]})))}
+    return shuffle(out);
   }
   function renderQ(){
     var q=S.list[S.i];
@@ -752,7 +755,7 @@ h2{font-family:var(--serif);font-weight:700;font-size:1.2rem;margin:26px 0 6px}
   $('modeTest').onclick=function(){mode='test';try{localStorage.setItem(KEY+'-mod',mode)}catch(e){}renderHome()};
   $('startExam').onclick=function(){
     if(EX){stopAudio();S=EX;$('quit').textContent='‹ Meniu';show('quiz');renderQ();tick();return}
-    st._note='';start(freshPick(30),'Simulare',false,null,true)};
+    st._note='';start(freshPick(30,2),'Simulare',false,null,true)};
   $('abandonExam').onclick=function(){
     if(!this.classList.contains('arm')){this.classList.add('arm');this.textContent='Sigur? Apasă din nou ca să renunți (nu se salvează rezultatul).';return}
     stopTimer();if(EX)cancelEx(EX);renderHome()};
